@@ -1,8 +1,27 @@
-import { Heading, FormControl, Button, Input, VStack } from "@chakra-ui/react";
+import { Heading, FormControl, Button, Input, VStack, useToast, Text, Center } from "@chakra-ui/react";
 import Head from "next/head";
-import Link from "next/link";
+import { useRouter } from "next/router";
+import { axiosInstance } from "../lib/axios";
+import { useForm } from "react-hook-form";
 
 export default function Home() {
+  const router = useRouter();
+  const toast = useToast();
+
+  const { register, handleSubmit, formState: { errors } } = useForm();
+  const onSubmit = async (data) => {
+    try {
+      await axiosInstance.get(`/api/room/${data.roomId}`);
+      router.push(`/room/${data.roomId}/users`);
+    } catch (e) {
+      toast({
+        title: 'Room not existed.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      });
+    }
+  };
   return (
     <div className="container">
       <Head>
@@ -11,22 +30,30 @@ export default function Home() {
       </Head>
 
       <main>
-        <VStack>
-          <Heading>คำต้องห้าม!</Heading>
-          <form>
-            <FormControl>
-              <VStack>
-                <Input id="roomId" type="text" name="roomId" />
-                <Button>JOIN ROOM</Button>
-              </VStack>
-            </FormControl>
-          </form>
-          
-          <p>or</p>
+        <VStack bg='purple.900' h='100vh' alignContent='center'>
+          <Center h='100vh' color='white'>
+            <VStack>
+              <Heading color='white' paddingBottom='20px'>Forbidden Word Game</Heading>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <FormControl>
+                  <VStack>
+                    <Input id="roomId" type="text" name="roomId" {...register('roomId', { required: true })} bg='purple.700' border='none' borderRadius='30'  placeholder='| ENTER ROOM CODE HERE' color='white' width='500px' height='50px' marginBottom='10px' />
+                    {errors.roomId && <span>Room ID is required.</span>}
+                    <Input type='submit' value='JOIN ROOM' color='white' bg='purple.700' border='none' borderRadius='20' _hover={{ bgGradient: "linear(to-t, purple.500, purple.300)" }} borderRadius='30' width='500px' height='50px' />
+                  </VStack>
+                </FormControl>
+              </form>
+              <Text color='white'>or</Text>
 
-          <Link href="/create-room">
-            <Button>CREATE ROOM</Button>
-          </Link>
+
+              <Button onClick={async () => {
+                const { data } = await axiosInstance.post('/api/create-room');
+                router.push(`/room/${data.roomId}`);
+              }}
+                color='white' bg='purple.700' border='none' borderRadius='20' _hover={{ bgGradient: "linear(to-t, purple.500, purple.300)" }} borderRadius='30' width='500px' height='50px'
+              >CREATE ROOM</Button>
+            </VStack>
+          </Center>
         </VStack>
       </main>
     </div>

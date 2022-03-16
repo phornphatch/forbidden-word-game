@@ -1,28 +1,22 @@
 import { VStack, Box, Heading } from "@chakra-ui/react";
+import useSWR from "swr";
+import { authFetcher } from "../lib/fetcher";
 
 export default function Game() {
-  const players = [
-    {
-      username: "test2",
-      word: "กล้วย",
-    },
-    {
-      username: "test3",
-      word: "ช้าง",
-    },
-    {
-      username: "test4",
-      word: "ลิง",
-    },
-  ];
+  const { data, error } = useSWR(['/api/game', 'tino'], authFetcher);
+
+  if (error) {
+    console.error('error fetching game data', error);
+    return <Heading>Something weng wrong</Heading>;
+  };
 
   return (
     <main>
       <VStack>
         <Heading>Timer: 01:00</Heading>
-        {players.map((p) => (
-          <Box key={p.username}>
-            user: {p.username} word: {p.word}
+        {data?.users.map((p) => (
+          <Box key={p.word}>
+            user: {p.name} word: {p.word || '-'} point: {p.point}
           </Box>
         ))}
       </VStack>

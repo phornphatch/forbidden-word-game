@@ -1,0 +1,47 @@
+import { ref } from "firebase/database";
+import admin from "../firebase/nodeApp";
+
+const db = admin.database();
+
+const words = {
+  verb: ["กิน", "นอน", "นั่ง", "ยืน", "เขียน", "พิมพ์", "ออกกำลังกาย", "เที่ยว", "เดิน", "ทำอาหาร", "คิด", "เรียน", "หลับ", "ขับรถ", "อาบน้ำ"],
+  fruit: ["แอปเปิ้ล", "มะละกอ", "กล้วย", "ส้ม", "กีวี่", "องุ่่น", "ทุเรียน", "เงาะ", "ลำไย", "สตอเบอร์รี่"],
+  animal: ["หมา", "แมว", "หมู", "หมี", "ควาย", "วัว", "ปลา", "หนู", "แพนด้า", "เพนกวิน", "ช้าง"],
+  occupation: ["ครู", "นักเรียน", "หมอ", "นายก", "ตำรวจ", "ทหาร", "ดารา", "พ่อค้า", "แม่ค้า"],
+  other: ["ใช่", "ไม่ใช่", "อะไร", "ที่ไหน", "เมื่อไร", "ใคร", "ทำไม", "หรอ", "จริง", "เธอ", "เรา", "นั่น", "ใกล้", "ไกล", "ได้", "ตก", "เบิ่อ", "ง่วง", "หิว"]
+};
+
+export async function getRoom(roomId) {
+  const snapshot = await db.ref(`/${roomId}/id`).get();
+  console.log(snapshot.val());
+  if (snapshot.exists()) {
+    return snapshot.val();
+  }
+
+  return null;
+}
+
+export function addUserToRoom(username, roomId) {
+  db.ref(`${roomId}/users`).push({
+    name: username,
+    point: 0,
+    word: ""
+  });
+}
+
+export function setRoom(roomId) {
+  try {
+    db.ref(`/${roomId}`).set({ id: roomId });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function getUsersByRoomId(roomId) {
+  const snapshot = await db.ref(`/${roomId}/users`).get();
+  if (snapshot.exists()) {
+    return Object.values(snapshot.val());
+  }
+
+  return [];
+}
