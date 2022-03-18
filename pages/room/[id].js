@@ -12,7 +12,7 @@ export default function CreateRoom() {
         <Container>
           <Input disabled value={router.query.id} textAlign='center' fontSize='4xl' py='10' />
         </Container>
-        <Link href={`/room/${router.query.id}/users`}>
+        <Link href={`/room/${router.query.id}/waiting`}>
           <Button>Enter</Button>
         </Link>
       </VStack>

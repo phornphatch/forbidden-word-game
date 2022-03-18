@@ -1,8 +1,8 @@
-import  { ChakraProvider } from '@chakra-ui/react'
-import UserProvider from '../context/userContext'
+import { ChakraProvider } from "@chakra-ui/react";
+import Head from "next/head";
+import UserProvider from "../context/userContext";
 
-import { extendTheme } from "@chakra-ui/react"
-
+import { extendTheme } from "@chakra-ui/react";
 
 const theme = extendTheme({
   colors: {
@@ -23,15 +23,19 @@ const theme = extendTheme({
       300: "#43A2F4",
     },
   },
-})
+});
 
 // Custom App to wrap it with context provider
 export default function App({ Component, pageProps }) {
   return (
     <ChakraProvider theme={theme}>
       <UserProvider>
+        <Head>
+          <title>คำต้องห้าม</title>
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
         <Component {...pageProps} />
       </UserProvider>
     </ChakraProvider>
-  )
+  );
 }

@@ -3,7 +3,7 @@
  */
 const nextConfig = {
   publicRuntimeConfig: {
-    baseURL: process.env.baseURL || 'http://localhost:3000'
+    baseURL: process.env.BASE_URL || 'http://localhost:3000'
   }
 }
 
