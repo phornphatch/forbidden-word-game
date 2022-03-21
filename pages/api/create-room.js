@@ -6,9 +6,9 @@ function generateRoomId() {
 
 export default async function handler(req, res) {
   try {
-    const { username } = req.body;
+    const { username, userId } = req.body;
     const roomId = generateRoomId();
-    await setRoom(roomId, username);
+    await setRoom(roomId, username, userId);
     return res.status(200).json({ roomId });
   } catch (error) {
     console.error(error);

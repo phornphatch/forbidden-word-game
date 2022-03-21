@@ -11,36 +11,29 @@ import {
 import { useRouter } from "next/router";
 import { axiosInstance } from "../lib/axios";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-export default function Home() {
+export default function CreatRoom() {
   const router = useRouter();
   const toast = useToast();
+  const [username, setUsername] = useState(null);
+  const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    if (!localStorage.getItem("fbwg_username")) {
+    if (!localStorage.getItem("fbwg_username") || !localStorage.getItem("fbwg_userid")) {
       router.push("/");
+    } else {
+      setUsername(localStorage.getItem("fbwg_username"));
+      setUserId(localStorage.getItem("fbwg_userid"));
     }
-  });
+  }, []);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const onSubmit = async (data) => {
-    try {
-      await axiosInstance.post(`/api/room/${data.roomId}`, { username: localStorage.getItem("fbwg_username") });
-      router.push(`/room/${data.roomId}/waiting`);
-    } catch (e) {
-      toast({
-        title: "Room not existed.",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-    }
-  };
+
   return (
     <div className="container">
       <main>
@@ -50,7 +43,19 @@ export default function Home() {
               <Heading color="white" paddingBottom="20px">
                 Forbidden Word Game
               </Heading>
-              <form onSubmit={handleSubmit(onSubmit)}>
+              <form onSubmit={handleSubmit(async (data) => {
+                 try {
+                  await axiosInstance.post(`/api/room/${data.roomId}/user/${userId}`, { username });
+                  router.push(`/room/${data.roomId}/waiting`);
+                } catch (e) {
+                  toast({
+                    title: "Room not existed.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                }
+              })}>
                 <FormControl>
                   <VStack>
                     <Input
@@ -90,7 +95,7 @@ export default function Home() {
                 onClick={async () => {
                   const { data } = await axiosInstance.post(
                     "/api/create-room",
-                    { username: localStorage.getItem("fbwg_username") }
+                    { username, userId }
                   );
                   router.push(`/room/${data.roomId}`);
                 }}
