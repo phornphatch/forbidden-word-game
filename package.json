@@ -3,7 +3,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "next lint"
   },
   "dependencies": {
     "@chakra-ui/react": "^1.8.6",
@@ -23,5 +24,9 @@
     "react-hook-form": "^7.28.0",
     "swr": "^1.2.2",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "eslint": "8.11.0",
+    "eslint-config-next": "12.1.0"
   }
 }
