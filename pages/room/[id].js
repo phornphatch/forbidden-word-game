@@ -22,7 +22,7 @@ export default function CreateRoom() {
                 backgroundColor="rgba(225, 225, 225, 0.3)"
                 color="white"
                 fontWeight="bold"
-                width="500px"
+                width="300px"
                 height="50px"
                 cursor="pointer"
                 _hover={{
