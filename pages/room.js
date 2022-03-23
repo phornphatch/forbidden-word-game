@@ -7,11 +7,14 @@ import {
   useToast,
   Text,
   Center,
+  HStack,
+  Box,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { axiosInstance } from "../lib/axios";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function CreatRoom() {
   const router = useRouter();
@@ -43,52 +46,10 @@ export default function CreatRoom() {
               <Heading color="white" paddingBottom="20px">
               {username}
               </Heading>
-              <form onSubmit={handleSubmit(async (data) => {
-                 try {
-                  await axiosInstance.post(`/api/room/${data.roomId}/user/${userId}`, { username });
-                  router.push(`/room/${data.roomId}/waiting`);
-                } catch (e) {
-                  toast({
-                    title: "Room not existed.",
-                    status: "error",
-                    duration: 3000,
-                    isClosable: true,
-                  });
-                }
-              })}>
-                <FormControl>
-                  <VStack spacing={8}>
-                    <Input
-                      id="roomId"
-                      type="text"
-                      name="roomId"
-                      {...register("roomId", { required: true })}
-                      borderRadius="30"
-                      placeholder="ENTER ROOM CODE HERE"
-                      color="white"
-                      width="500px"
-                      height="50px"
-                    />
-                    {errors.roomId && <span>Room ID is required.</span>}
-                    <Input
-                      type="submit"
-                      value="JOIN ROOM" 
-                      borderRadius="30"
-                      backgroundColor="rgba(225, 225, 225, 0.3)"              
-                      color="white"
-                      fontWeight="bold"
-                      width="500px"
-                      height="50px"
-                      cursor="pointer"
-                      _hover={{
-                        bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-                      }}
-                    />
-                  </VStack>
-                </FormControl>
-              </form>
-              <Text color="white">or</Text>
-
+              <HStack spacing={5}>
+              <Box><Image src="/images/host.png" width="100px" height="127px" /></Box>
+              <VStack alignItems="flex-start">
+                <Box>HOST</Box>
               <Button
                 onClick={async () => {
                   const { data } = await axiosInstance.post(
@@ -103,7 +64,7 @@ export default function CreatRoom() {
                 backgroundColor="rgba(225, 225, 225, 0.3)"              
                 color="white"
                 fontWeight="bold"
-                width="500px"
+                width="300px"
                 height="50px"
                 cursor="pointer"
                 _hover={{
@@ -112,6 +73,66 @@ export default function CreatRoom() {
               >
                 CREATE ROOM
               </Button>
+              </VStack>
+              
+              </HStack>
+              
+
+              <Text color="white"> - or - </Text>
+              <HStack spacing={5}>
+              <Box><Image src="/images/players.png" width="150px" height="144px" /></Box>
+              <VStack>
+                <Box>Play with friends</Box>
+               
+                <form onSubmit={handleSubmit(async (data) => {
+                 try {
+                  await axiosInstance.post(`/api/room/${data.roomId}/user/${userId}`, { username });
+                  router.push(`/room/${data.roomId}/waiting`);
+                } catch (e) {
+                  toast({
+                    title: "Room not existed.",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                  });
+                }
+              })}>
+                <FormControl>
+                  <HStack spacing={2}>
+                    <Input
+                      id="roomId"
+                      type="text"
+                      name="roomId"
+                      {...register("roomId", { required: true })}
+                      borderRadius="30"
+                      placeholder="ENTER ROOM CODE HERE"
+                      color="white"
+                      width="250px"
+                      height="50px"
+                    />
+                    {errors.roomId && <span>Room ID is required.</span>}
+                    <Input
+                      type="submit"
+                      value="JOIN" 
+                      borderRadius="30"
+                      backgroundColor="rgba(225, 225, 225, 0.3)"              
+                      color="white"
+                      fontWeight="bold"
+                      width="80px"
+                      height="50px"
+                      cursor="pointer"
+                      _hover={{
+                        bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                      }}
+                    />
+                  </HStack>
+                </FormControl>
+              </form>
+             
+              </VStack>
+              </HStack>
+              
+
             </VStack>
           </Center>
         </VStack>
