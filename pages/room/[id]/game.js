@@ -1,12 +1,11 @@
 import { VStack, Box, Heading, Text, Button } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
-import useSWR, { mutate } from "swr";
+import useSWR from "swr";
 import { authFetcher } from "../../../lib/fetcher";
 import { dayjs } from "../../../lib/dayjs";
 import { useFirebase } from "../../../firebase/hooks";
 import { child, get, onValue, ref, set } from "firebase/database";
-import { axiosInstance } from "../../../lib/axios";
 
 export default function Game() {
   const [userId, setUserId] = useState(null);
@@ -92,8 +91,24 @@ export default function Game() {
         }
       });
 
+      const unsubscribeShowAnswer = onValue(
+        child(roomRef, "/showAnswer"),
+        async (snapshot) => {
+          if (snapshot.exists() && snapshot.val() === true) {
+            const users = await get(child(roomRef, "users"));
+            const [currentUser] = users.val().filter(({ id }) => id === userId);
+            setMyWord(currentUser.word);
+          }
+
+          if (snapshot.val() === false) {
+            setMyWord("");
+          }
+        }
+      );
+
       return () => {
         unsubscribe();
+        unsubscribeShowAnswer();
         clearInterval(interval);
       };
     }
@@ -111,33 +126,12 @@ export default function Game() {
           </Box>
         ))}
 
-        {roundEnded && (
-          <Button
-            onClick={async () => {
-              const {
-                data: { word },
-              } = await axiosInstance.get(
-                `/api/room/${router.query.id}/user/${userId}/myword`
-              );
-
-              setMyWord(word);
-            }}
-          >
-            Show answer
-          </Button>
-        )}
-
         {isCreator && roundEnded && (
           <>
             <Button
               onClick={async () => {
-                const {
-                  data: { word },
-                } = await axiosInstance.get(
-                  `/api/room/${router.query.id}/user/${userId}/myword`
-                );
-
-                setMyWord(word);
+                const roomRef = ref(db, `/${router.query.id}`);
+                await set(child(roomRef, "/showAnswer"), true);
               }}
             >
               Show answer
@@ -145,10 +139,14 @@ export default function Game() {
             <Button
               onClick={async () => {
                 const roomRef = ref(db, `/${router.query.id}`);
-                await set(
-                  child(roomRef, "/endTime"),
-                  dayjs().add(5, "minutes").unix()
-                );
+                await Promise.all([
+                  set(child(roomRef, "/showAnswer"), false),
+                  set(
+                    child(roomRef, "/endTime"),
+                    dayjs().add(5, "minutes").unix()
+                  ),
+                ]);
+                setRoundEnded(false);
               }}
             >
               New round
