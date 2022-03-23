@@ -1,4 +1,4 @@
-import { VStack, Box, Heading, Button, Text } from "@chakra-ui/react";
+import { VStack, Box, Heading, Button, Text, Center } from "@chakra-ui/react";
 import { onValue, child, ref, get, set } from "firebase/database";
 import useSWR from "swr";
 import { useEffect, useState, useRef } from "react";
@@ -73,7 +73,9 @@ export default function Waiting() {
 
   return (
     <main>
-      <VStack>
+      <VStack  alignContent="center">
+      <Center h="100vh" color="white" marginTop="-50px">
+      <VStack spacing={8}>
         <Heading size="2xl">Waiting for players...</Heading>
         <Heading size="xl">Room: {router.query.id}</Heading>
         {!users && <Text>Loading</Text>}
@@ -81,8 +83,22 @@ export default function Waiting() {
           <Box key={p.name}>{p.name}</Box>
         ))}
         {isCreator && (
-          <Button onClick={async () => await startGame.current()}>Start</Button>
+          <Button onClick={async () => await startGame.current()}
+          borderRadius="30"
+                border="1px"
+                borderColor="white"
+                backgroundColor="rgba(225, 225, 225, 0.3)"
+                color="white"
+                fontWeight="bold"
+                width="500px"
+                height="50px"
+                cursor="pointer"
+                _hover={{
+                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                }}>Start</Button>
         )}
+        </VStack>
+        </Center>
       </VStack>
     </main>
   );

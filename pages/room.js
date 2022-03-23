@@ -37,11 +37,11 @@ export default function CreatRoom() {
   return (
     <div className="container">
       <main>
-        <VStack bg="purple.900" h="100vh" alignContent="center">
-          <Center h="100vh" color="white">
-            <VStack>
+        <VStack alignContent="center">
+          <Center h="100vh" color="white" marginTop="-50px">
+            <VStack spacing={8}>
               <Heading color="white" paddingBottom="20px">
-                Forbidden Word Game
+              {username}
               </Heading>
               <form onSubmit={handleSubmit(async (data) => {
                  try {
@@ -57,34 +57,32 @@ export default function CreatRoom() {
                 }
               })}>
                 <FormControl>
-                  <VStack>
+                  <VStack spacing={8}>
                     <Input
                       id="roomId"
                       type="text"
                       name="roomId"
                       {...register("roomId", { required: true })}
-                      bg="purple.700"
-                      border="none"
                       borderRadius="30"
-                      placeholder="| ENTER ROOM CODE HERE"
+                      placeholder="ENTER ROOM CODE HERE"
                       color="white"
                       width="500px"
                       height="50px"
-                      marginBottom="10px"
                     />
                     {errors.roomId && <span>Room ID is required.</span>}
                     <Input
                       type="submit"
-                      value="JOIN ROOM"
-                      color="white"
-                      bg="purple.700"
-                      border="none"
-                      _hover={{
-                        bgGradient: "linear(to-t, purple.500, purple.300)",
-                      }}
+                      value="JOIN ROOM" 
                       borderRadius="30"
+                      backgroundColor="rgba(225, 225, 225, 0.3)"              
+                      color="white"
+                      fontWeight="bold"
                       width="500px"
                       height="50px"
+                      cursor="pointer"
+                      _hover={{
+                        bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                      }}
                     />
                   </VStack>
                 </FormControl>
@@ -99,13 +97,18 @@ export default function CreatRoom() {
                   );
                   router.push(`/room/${data.roomId}`);
                 }}
-                color="white"
-                bg="purple.700"
-                border="none"
-                _hover={{ bgGradient: "linear(to-t, purple.500, purple.300)" }}
                 borderRadius="30"
+                border="1px"
+                borderColor="white"
+                backgroundColor="rgba(225, 225, 225, 0.3)"              
+                color="white"
+                fontWeight="bold"
                 width="500px"
                 height="50px"
+                cursor="pointer"
+                _hover={{
+                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                }}
               >
                 CREATE ROOM
               </Button>
