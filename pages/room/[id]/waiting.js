@@ -4,8 +4,9 @@ import useSWR from "swr";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
 import { authFetcher } from "../../../lib/fetcher";
-import { useFirebaseDB } from "../../../firebase/hooks";
+import { useFirebase } from "../../../firebase/hooks";
 import { axiosInstance } from "../../../lib/axios";
+import { dayjs } from "../../../lib/dayjs";
 
 export default function Waiting() {
   const startGame = useRef();
@@ -22,7 +23,7 @@ export default function Waiting() {
 
   const [users, setUsers] = useState(data?.users);
   const [isCreator, setIsCreator] = useState(false);
-  const { db } = useFirebaseDB();
+  const { db } = useFirebase();
 
   useEffect(() => {
     if (!localStorage.getItem("fbwg_userid")) {
@@ -57,7 +58,11 @@ export default function Waiting() {
         await axiosInstance.get(
           `/api/room/${router.query.id}/user/${userId}/random-word`
         );
-        await set(child(roomRef, "/start"), true);
+      
+        await Promise.all([
+          set(child(roomRef, "/endTime"), dayjs().add(5, 'minutes').unix()),
+          set(child(roomRef, "/start"), true)
+        ]);
       };
 
       return () => {

@@ -1,9 +1,35 @@
-import { Heading, Input, Text, VStack, Button, Container, Center } from "@chakra-ui/react";
+import {
+  Heading,
+  Input,
+  Text,
+  VStack,
+  Button,
+  Container,
+  Center,
+} from "@chakra-ui/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import useSWR from "swr";
+import { fetcher } from "../../lib/fetcher";
 
 export default function CreateRoom() {
   const router = useRouter();
+  const { data, error } = useSWR(() => {
+    if (router.query.id) {
+      return `/api/room/${router.query.id}`;
+    }
+
+    return null;
+  }, fetcher);
+
+  if (error) {
+    router.push('/')
+  }
+
+  if (!data) {
+    return <Center><Heading>Loading...</Heading></Center>
+  }
+
   return (
     <main>
       <VStack alignContent="center">

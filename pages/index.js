@@ -1,9 +1,16 @@
-import { Input, VStack, FormLabel, Container, toast, Center, Box } from "@chakra-ui/react";
 import { useRouter } from "next/router";
+import Image from "next/image";
+import {
+  VStack,
+  Container,
+  useToast,
+  Input,
+  Center,
+  Box,
+} from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
 import { useEffect } from "react";
-import { v4 as uuid } from "uuid";
-import Image from "next/image";
+import { useFirebase } from "../firebase/hooks";
 
 export default function CreatePlayer() {
   const router = useRouter();
@@ -13,6 +20,10 @@ export default function CreatePlayer() {
     formState: { errors },
   } = useForm();
 
+  const toast = useToast();
+
+  const { anonUser } = useFirebase();
+
   useEffect(() => {
     localStorage.removeItem("fbwg_username");
     localStorage.removeItem("fbwg_userid");
@@ -21,7 +32,7 @@ export default function CreatePlayer() {
   const onSubmit = (data) => {
     try {
       localStorage.setItem("fbwg_username", data.username);
-      localStorage.setItem("fbwg_userid", uuid());
+      localStorage.setItem("fbwg_userid", anonUser.uid);
       router.push(`/room`);
     } catch {
       toast({
@@ -40,8 +51,20 @@ export default function CreatePlayer() {
           <VStack alignContent="center">
             <Center h="100vh" color="white" marginTop="-50px">
               <VStack spacing={8}>
-                <Box><Image src="/images/logo-white.png" width={300} height={140} /></Box>
-                <Box><Image src="/images/oopsie-purple.png" width={120} height={128} /></Box>
+                <Box>
+                  <Image
+                    src="/images/logo-white.png"
+                    width={300}
+                    height={140}
+                  />
+                </Box>
+                <Box>
+                  <Image
+                    src="/images/oopsie-purple.png"
+                    width={120}
+                    height={128}
+                  />
+                </Box>
                 <Input
                   name="username"
                   type="text"
@@ -65,10 +88,10 @@ export default function CreatePlayer() {
                   height="50px"
                   cursor="pointer"
                   _hover={{
-                    bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                    bgGradient:
+                      "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
                   }}
                 />
-
               </VStack>
             </Center>
           </VStack>
