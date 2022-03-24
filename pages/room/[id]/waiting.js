@@ -82,7 +82,7 @@ export default function Waiting() {
             <HStack>
               <Box color="white" size='3xl' fontWeight='light'>
                 ROOM CODE: </Box>
-              <VStack alignContent="center" fontWeight='bold'
+              <VStack alignContent="center"
                 borderRadius="10"
                 border="2px"
                 borderColor="white"
@@ -90,7 +90,9 @@ export default function Waiting() {
                 color="black"
                 fontWeight="bold"
                 width="100px"
-                height="30px"> <Box>{router.query.id}</Box> </VStack>
+                height="30px">
+                <Box>{router.query.id}</Box>
+              </VStack>
             </HStack>
 
             <Box >

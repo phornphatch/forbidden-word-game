@@ -7,12 +7,14 @@ export default async function handler(req, res) {
   if (!room) return res.status(404).send();
 
   const newUsers = map(room.users, (user) => {
-    const randomWord = sample(words.other);
+    const randomWord = sample([...words.other, ...words.mecode]);
     user.word = randomWord;
     return user;
   });
 
   await setUsers(req.query.id, newUsers);
+
+  console.log('random');
 
   return res.status(200).send();
 }

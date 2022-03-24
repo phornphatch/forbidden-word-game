@@ -1,4 +1,4 @@
-import { VStack, Box, Heading, Text, Button, Center } from "@chakra-ui/react";
+import { VStack, Box, Heading, Text, Button, Center, HStack, Container } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
@@ -8,6 +8,8 @@ import { dayjs } from "../../../lib/dayjs";
 import { axiosInstance } from "../../../lib/axios";
 import { useFirebase } from "../../../firebase/hooks";
 import { child, get, onValue, ref, set } from "firebase/database";
+import Image from "next/image";
+import { isEqual } from "lodash";
 
 const ROUND_LIMIT = 7;
 const roundStatuses = {
@@ -17,49 +19,26 @@ const roundStatuses = {
   ENDED: "ended",
 };
 
-function roundStatusUpdater(roundStatus, setRoundStatus, useSWRNext) {
-  return (key, fetcher, config) => {
-    const swr = useSWRNext(key, fetcher, config);
-    if (roundStatus === roundStatuses.LOADING) {
-      setRoundStatus(roundStatuses.INIT);
-    }
-    return swr;
-  };
-}
-
 function atRoundLimit(currentRound, roundLimit) {
-  return currentRound === roundLimit;
+  return currentRound >= roundLimit;
 }
 
 export default function Game() {
   const interval = useRef();
+  const timerIntervalFunc = useRef();
   const [userId, setUserId] = useState(null);
   const [username, setUsername] = useState(null);
   const [endTime, setEndTime] = useState(null);
-  const [roundStatus, setRoundStatus] = useState("init");
+  const [roundStatus, setRoundStatus] = useState(roundStatuses.INIT);
   const [displayedTimer, setDisplayedTimer] = useState();
   const [isCreator, setIsCreator] = useState(false);
   const [myWord, setMyWord] = useState("");
   const [round, setRound] = useState(1);
+  const [users, setUsers] = useState([]);
   const router = useRouter();
   const { db } = useFirebase();
-  const { data, error, mutate } = useSWR(
-    () => {
-      if (router.query.id) {
-        return [`/api/room/${router.query.id}/user/${userId}/game`];
-      }
-      return null;
-    },
-    authFetcher,
-    {
-      use: [
-        (useSWRNext) =>
-          roundStatusUpdater(roundStatus, setRoundStatus, useSWRNext),
-      ],
-    }
-  );
 
-  const timerInterval = useCallback(() => {
+  timerIntervalFunc.current = () => {
     return setInterval(() => {
       const timeLeftInSeconds = dayjs.unix(endTime).diff(dayjs(), "s");
       if (timeLeftInSeconds > 0) {
@@ -76,7 +55,7 @@ export default function Game() {
         setDisplayedTimer("Times up!");
       }
     }, 1000);
-  }, [endTime]);
+  };
 
   useEffect(() => {
     if (
@@ -88,6 +67,13 @@ export default function Game() {
 
     setUserId(localStorage.getItem("fbwg_userid"));
     setUsername(localStorage.getItem("fbwg_username"));
+    const getUsers = async (roomId) => {
+      const { data: { users } } = await axiosInstance.get(`/api/room/${roomId}/user/${localStorage.getItem("fbwg_userid")}/game`);
+      setUsers(users);
+    };
+    if (router.query.id) {
+      getUsers(router.query.id);
+    }
   }, [router]);
 
   useEffect(() => {
@@ -103,10 +89,11 @@ export default function Game() {
 
       const unsubscribe = onValue(child(roomRef, "/endTime"), (snapshot) => {
         if (snapshot.exists()) {
+          console.log("endTime");
           clearInterval(interval.current);
           setEndTime(snapshot.val());
           setRoundStatus(roundStatuses.RUNNING);
-          interval.current = timerInterval();
+          interval.current = timerIntervalFunc.current();
         }
       });
 
@@ -126,7 +113,9 @@ export default function Game() {
       );
 
       const unsubscribeRound = onValue(child(roomRef, "/round"), (snapshot) => {
-        if (snapshot.exists()) {
+        console.log("round");
+        if (snapshot.exists() && snapshot.val() !== round) {
+          console.log("round2");
           setRound(snapshot.val());
         }
       });
@@ -137,44 +126,72 @@ export default function Game() {
         }
       });
 
+      const unsubscribeUsers = onValue(child(roomRef, "/users"), (snapshot) => {
+        const otherUsers = snapshot.val().filter((u) => u.id !== localStorage.getItem("fbwg_userid"));
+        if (snapshot.exists() && !isEqual(users, otherUsers)) {
+          setUsers(otherUsers);
+          clearInterval(interval.current);
+          setRoundStatus(roundStatuses.INIT);
+          setDisplayedTimer("-");
+        }
+      });
+
       return () => {
         unsubscribe();
         unsubscribeShowAnswer();
         unsubscribeRound();
         unsubscribeEnded();
+        unsubscribeUsers();
         clearInterval(interval.current);
       };
     }
-  }, [db, endTime, router, router.query.id, timerInterval, userId, username]);
-
-  if (error) {
-    console.error("error fetching game data", error);
-    return <Heading>Something weng wrong</Heading>;
-  }
+  }, [db, endTime, router, router.query.id, userId, username, round]);
 
   return (
     <main>
       <VStack alignContent="center">
-        <Center h="100vh" color="white" marginTop="-90px">
+        <Center h="100vh" color="white">
           <VStack spacing={6}>
-            <Heading>Timer: {displayedTimer || "-"}</Heading>
-            {!atRoundLimit(round, ROUND_LIMIT) && <Heading>Round: {round}</Heading>}
-            <Text>Your score: {username} - 0</Text>
+            {!atRoundLimit(round, ROUND_LIMIT) && <Heading>ROUND {round}</Heading>}
+            <HStack>
+              <VStack alignContent="center"
+                borderRadius="10"
+                border="2px"
+                borderColor="white"
+                backgroundColor="white"
+                color="black"
+                fontWeight="bold"
+                padding="1"
+                width="250px"
+              >
+                <Heading>{displayedTimer || "-"}</Heading>
+              </VStack>
+            </HStack>
+
             {myWord !== "" && <Text>Your word: {myWord}</Text>}
-            {data?.users?.map((p) => (
-              <Box key={p.word}>
-                user: {p.name} word: {p.word || "-"} point: {p.point}
-              </Box>
-            ))}
+            <HStack>
+              {users?.map((p) => (
+                <Container key={p.id} border="1px" borderColor="white" borderStyle="dashed" borderRadius="10" width="130px" padding={3}>
+                  <VStack spacing={2}>
+                    <Heading size="md">&quot; {p.word || "-"} &quot;</Heading>
+                    <Box><Image src="/images/oopsie-orange.png" width="80px" height="85px" /></Box>
+                    <Heading size="sm">{p.name}  </Heading>
+                    <Heading size="sm" fontWeight="light">point: {p.point}</Heading>
+                  </VStack>
+                </Container>
+              ))}
+            </HStack>
+
             {!atRoundLimit(round, ROUND_LIMIT) &&
               roundStatus === roundStatuses.INIT &&
               isCreator && (
                 <Button
                   onClick={async () => {
+                    clearInterval(interval.current);
                     const roomRef = ref(db, `/${router.query.id}`);
                     await set(
                       child(roomRef, "/endTime"),
-                      dayjs().add(10, "seconds").unix()
+                      dayjs().add(3, "minutes").unix()
                     );
                   }}
                   borderRadius="30"
@@ -193,60 +210,121 @@ export default function Game() {
                   Start timer
                 </Button>
               )}
+            {isCreator &&
+              roundStatus === roundStatuses.ENDED &&
+              <Button
+                onClick={async () => {
+                  const roomRef = ref(db, `/${router.query.id}`);
+                  await set(child(roomRef, "/showAnswer"), true);
+                }}
+                borderRadius="30"
+                border="1px"
+                borderColor="white"
+                backgroundColor="rgba(225, 225, 225, 0.3)"
+                color="white"
+                fontWeight="bold"
+                width="400px"
+                height="50px"
+                cursor="pointer"
+                _hover={{
+                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                }}
+              >
+                Show words
+              </Button>
+            }
 
-            {!atRoundLimit(round, ROUND_LIMIT) &&
+            {!atRoundLimit(round + 1, ROUND_LIMIT) &&
               isCreator &&
               roundStatus === roundStatuses.ENDED && (
-                <>
-                  <Button
-                    onClick={async () => {
-                      const roomRef = ref(db, `/${router.query.id}`);
-                      await set(child(roomRef, "/showAnswer"), true);
-                    }}
-                    borderRadius="30"
-                    border="1px"
-                    borderColor="white"
-                    backgroundColor="rgba(225, 225, 225, 0.3)"
-                    color="white"
-                    fontWeight="bold"
-                    width="400px"
-                    height="50px"
-                    cursor="pointer"
-                    _hover={{
-                      bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-                    }}
-                  >
-                    Show words
-                  </Button>
-                  <Button
-                    onClick={async () => {
-                      const roomRef = ref(db, `/${router.query.id}`);
-                      // Only random words if next round is a valid round
-                      if (round + 1 !== ROUND_LIMIT) {
-                        await Promise.all([
-                          axiosInstance.get(
-                            `/api/room/${router.query.id}/user/${userId}/random-word`
-                          ),
-                          set(child(roomRef, "/showAnswer"), false),
-                          set(child(roomRef, "/round"), round + 1),
-                        ]);
-                        setRoundStatus(roundStatuses.LOADING);
-                        mutate(`/api/room/${router.query.id}/user/${userId}/game`);
-                      } else {
-                        await set(child(roomRef, "/round"), round + 1);
-                      }
-                    }}
-                  >
-                    Next round
-                  </Button>
-                </>
+                <Button
+                  onClick={async () => {
+                    const roomRef = ref(db, `/${router.query.id}`);
+                    // Only random words if next round is a valid round
+                    if (round + 1 !== ROUND_LIMIT) {
+                      // setRoundStatus(roundStatuses.LOADING);
+                      console.log('loading');
+                      await Promise.all([
+                        axiosInstance.get(
+                          `/api/room/${router.query.id}/user/${userId}/random-word`
+                        ),
+                        set(child(roomRef, "/showAnswer"), false),
+                        set(child(roomRef, "/round"), round + 1),
+                      ]);
+                    } else {
+                      await set(child(roomRef, "/round"), round + 1);
+                    }
+                  }}
+                  borderRadius="30"
+                  border="1px"
+                  borderColor="white"
+                  backgroundColor="rgba(225, 225, 225, 0.3)"
+                  color="white"
+                  fontWeight="bold"
+                  width="400px"
+                  height="50px"
+                  cursor="pointer"
+                  _hover={{
+                    bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  }}
+                >
+                  Next round
+                </Button>
+              )}
+            {
+              isCreator &&
+              roundStatus === roundStatuses.RUNNING && (
+                <Button
+                  onClick={async () => {
+                    const roomRef = ref(db, `/${router.query.id}`);
+                    // Only random words if next round is a valid round
+                    if (round + 1 !== ROUND_LIMIT) {
+                      setRoundStatus(roundStatuses.LOADING);
+                      await Promise.all([
+                        axiosInstance.get(
+                          `/api/room/${router.query.id}/user/${userId}/random-word`
+                        ),
+                        set(child(roomRef, "/showAnswer"), false),
+                        set(child(roomRef, "/round"), round + 1),
+                      ]);
+                    } else {
+                      await set(child(roomRef, "/round"), round + 1);
+                    }
+                  }}
+                  borderRadius="30"
+                  border="1px"
+                  borderColor="white"
+                  backgroundColor="rgba(225, 225, 225, 0.3)"
+                  color="white"
+                  fontWeight="bold"
+                  width="400px"
+                  height="50px"
+                  cursor="pointer"
+                  _hover={{
+                    bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  }}
+                >
+                  End round
+                </Button>
               )}
 
-            {atRoundLimit(round, ROUND_LIMIT) && (
+            {atRoundLimit(round + 1, ROUND_LIMIT) && roundStatus === roundStatuses.ENDED && isCreator && (
               <Button
                 onClick={async () => {
                   const roomRef = ref(db, `/${router.query.id}`);
                   await set(child(roomRef, "/ended"), true);
+                }}
+                borderRadius="30"
+                border="1px"
+                borderColor="white"
+                backgroundColor="rgba(225, 225, 225, 0.3)"
+                color="white"
+                fontWeight="bold"
+                width="400px"
+                height="50px"
+                cursor="pointer"
+                _hover={{
+                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
                 }}
               >
                 End Game

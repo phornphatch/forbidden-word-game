@@ -1,6 +1,5 @@
 import { Box, ChakraProvider } from "@chakra-ui/react";
 import Head from "next/head";
-import UserProvider from "../context/userContext";
 
 import { extendTheme } from "@chakra-ui/react";
 
@@ -33,19 +32,17 @@ const theme = extendTheme({
 export default function App({ Component, pageProps }) {
   return (
     <ChakraProvider theme={theme}>
-      <UserProvider>
-        <Head>
-          <title>คำต้องห้าม</title>
-          <link rel="icon" href="/favicon.ico" />
-        </Head>
-        <Box
-          bgImage={"/images/background.png"}
-          h="100vh"
-          backgroundSize={"cover"}
-        >
-          <Component {...pageProps} />
-        </Box>
-      </UserProvider>
+      <Head>
+        <title>คำต้องห้าม</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <Box
+        bgImage={"/images/background.png"}
+        h="100vh"
+        backgroundSize={"cover"}
+      >
+        <Component {...pageProps} />
+      </Box>
     </ChakraProvider>
   );
 }
