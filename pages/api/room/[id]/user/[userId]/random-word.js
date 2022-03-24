@@ -2,8 +2,8 @@ import { sample, map } from "lodash";
 import { getRoom, setUsers, words } from "../../../../../../db";
 
 export default async function handler(req, res) {
-  const room = await getRoom(req.query.id)
-  
+  const room = await getRoom(req.query.id);
+
   if (!room) return res.status(404).send();
 
   const newUsers = map(room.users, (user) => {

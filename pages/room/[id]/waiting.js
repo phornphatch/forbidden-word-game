@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import { authFetcher } from "../../../lib/fetcher";
 import { useFirebase } from "../../../firebase/hooks";
 import { axiosInstance } from "../../../lib/axios";
-import { dayjs } from "../../../lib/dayjs";
 
 export default function Waiting() {
   const startGame = useRef();
@@ -58,11 +57,8 @@ export default function Waiting() {
         await axiosInstance.get(
           `/api/room/${router.query.id}/user/${userId}/random-word`
         );
-      
-        await Promise.all([
-          set(child(roomRef, "/endTime"), dayjs().add(5, 'minutes').unix()),
-          set(child(roomRef, "/start"), true)
-        ]);
+
+        await set(child(roomRef, "/start"), true);
       };
 
       return () => {
@@ -72,24 +68,25 @@ export default function Waiting() {
     }
 
     setUserId(localStorage.getItem("fbwg_userid"));
-  }, [db]);
+  }, [db, router, userId]);
 
   if (error) return <Heading>Something went wrong</Heading>;
 
   return (
     <main>
-      <VStack  alignContent="center">
-      <Center h="100vh" color="white" marginTop="-50px">
-      <VStack spacing={8}>
-        <Heading size="2xl">Waiting for players...</Heading>
-        <Heading size="xl">Room: {router.query.id}</Heading>
-        {!users && <Text>Loading</Text>}
-        {users?.map((p) => (
-          <Box key={p.name}>{p.name}</Box>
-        ))}
-        {isCreator && (
-          <Button onClick={async () => await startGame.current()}
-          borderRadius="30"
+      <VStack alignContent="center">
+        <Center h="100vh" color="white" marginTop="-50px">
+          <VStack spacing={8}>
+            <Heading size="2xl">Waiting for players...</Heading>
+            <Heading size="xl">Room: {router.query.id}</Heading>
+            {!users && <Text>Loading</Text>}
+            {users?.map((p) => (
+              <Box key={p.name}>{p.name}</Box>
+            ))}
+            {isCreator && (
+              <Button
+                onClick={async () => await startGame.current()}
+                borderRadius="30"
                 border="1px"
                 borderColor="white"
                 backgroundColor="rgba(225, 225, 225, 0.3)"
@@ -99,10 +96,14 @@ export default function Waiting() {
                 height="50px"
                 cursor="pointer"
                 _hover={{
-                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-                }}>Start</Button>
-        )}
-        </VStack>
+                  bgGradient:
+                    "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                }}
+              >
+                Start
+              </Button>
+            )}
+          </VStack>
         </Center>
       </VStack>
     </main>

@@ -23,7 +23,10 @@ export default function CreatRoom() {
   const [userId, setUserId] = useState(null);
 
   useEffect(() => {
-    if (!localStorage.getItem("fbwg_username") || !localStorage.getItem("fbwg_userid")) {
+    if (
+      !localStorage.getItem("fbwg_username") ||
+      !localStorage.getItem("fbwg_userid")
+    ) {
       router.push("/");
     } else {
       setUsername(localStorage.getItem("fbwg_username"));
@@ -44,95 +47,105 @@ export default function CreatRoom() {
           <Center h="100vh" color="white" marginTop="-50px">
             <VStack spacing={8}>
               <Heading color="white" paddingBottom="20px">
-              {username}
+                {username}
               </Heading>
               <HStack spacing={5}>
-              <Box><Image src="/images/host.png" width="100px" height="127px" /></Box>
-              <VStack alignItems="flex-start">
-                <Box>HOST</Box>
-              <Button
-                onClick={async () => {
-                  const { data } = await axiosInstance.post(
-                    "/api/create-room",
-                    { username, userId }
-                  );
-                  router.push(`/room/${data.roomId}`);
-                }}
-                borderRadius="30"
-                border="1px"
-                borderColor="white"
-                backgroundColor="rgba(225, 225, 225, 0.3)"              
-                color="white"
-                fontWeight="bold"
-                width="300px"
-                height="50px"
-                cursor="pointer"
-                _hover={{
-                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-                }}
-              >
-                CREATE ROOM
-              </Button>
-              </VStack>
-              
+                <Box>
+                  <Image src="/images/host.png" width="100px" height="127px" />
+                </Box>
+                <VStack alignItems="flex-start">
+                  <Box>HOST</Box>
+                  <Button
+                    onClick={async () => {
+                      const { data } = await axiosInstance.post(
+                        "/api/create-room",
+                        { username, userId }
+                      );
+                      router.push(`/room/${data.roomId}`);
+                    }}
+                    borderRadius="30"
+                    border="1px"
+                    borderColor="white"
+                    backgroundColor="rgba(225, 225, 225, 0.3)"
+                    color="white"
+                    fontWeight="bold"
+                    width="300px"
+                    height="50px"
+                    cursor="pointer"
+                    _hover={{
+                      bgGradient:
+                        "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                    }}
+                  >
+                    CREATE ROOM
+                  </Button>
+                </VStack>
               </HStack>
-              
 
               <Text color="white"> - or - </Text>
               <HStack spacing={5}>
-              <Box><Image src="/images/players.png" width="150px" height="144px" /></Box>
-              <VStack>
-                <Box>Play with friends</Box>
-               
-                <form onSubmit={handleSubmit(async (data) => {
-                 try {
-                  await axiosInstance.post(`/api/room/${data.roomId}/user/${userId}`, { username });
-                  router.push(`/room/${data.roomId}/waiting`);
-                } catch (e) {
-                  toast({
-                    title: "Room not existed.",
-                    status: "error",
-                    duration: 3000,
-                    isClosable: true,
-                  });
-                }
-              })}>
-                <FormControl>
-                  <HStack spacing={2}>
-                    <Input
-                      id="roomId"
-                      type="text"
-                      name="roomId"
-                      {...register("roomId", { required: true })}
-                      borderRadius="30"
-                      placeholder="ENTER ROOM CODE HERE"
-                      color="white"
-                      width="250px"
-                      height="50px"
-                    />
-                    {errors.roomId && <span>Room ID is required.</span>}
-                    <Input
-                      type="submit"
-                      value="JOIN" 
-                      borderRadius="30"
-                      backgroundColor="rgba(225, 225, 225, 0.3)"              
-                      color="white"
-                      fontWeight="bold"
-                      width="80px"
-                      height="50px"
-                      cursor="pointer"
-                      _hover={{
-                        bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-                      }}
-                    />
-                  </HStack>
-                </FormControl>
-              </form>
-             
-              </VStack>
-              </HStack>
-              
+                <Box>
+                  <Image
+                    src="/images/players.png"
+                    width="150px"
+                    height="144px"
+                  />
+                </Box>
+                <VStack>
+                  <Box>Play with friends</Box>
 
+                  <form
+                    onSubmit={handleSubmit(async (data) => {
+                      try {
+                        await axiosInstance.post(
+                          `/api/room/${data.roomId}/user/${userId}`,
+                          { username }
+                        );
+                        router.push(`/room/${data.roomId}/waiting`);
+                      } catch (e) {
+                        toast({
+                          title: "Room not existed.",
+                          status: "error",
+                          duration: 3000,
+                          isClosable: true,
+                        });
+                      }
+                    })}
+                  >
+                    <FormControl>
+                      <HStack spacing={2}>
+                        <Input
+                          id="roomId"
+                          type="text"
+                          name="roomId"
+                          {...register("roomId", { required: true })}
+                          borderRadius="30"
+                          placeholder="ENTER ROOM CODE HERE"
+                          color="white"
+                          width="250px"
+                          height="50px"
+                        />
+                        {errors.roomId && <span>Room ID is required.</span>}
+                        <Input
+                          type="submit"
+                          value="JOIN"
+                          borderRadius="30"
+                          backgroundColor="rgba(225, 225, 225, 0.3)"
+                          color="white"
+                          fontWeight="bold"
+                          width="80px"
+                          height="50px"
+                          cursor="pointer"
+                          _hover={{
+                            bgGradient:
+                              "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                          }}
+                        />
+                      </HStack>
+                    </FormControl>
+                  </form>
+                </VStack>
+              </HStack>
             </VStack>
           </Center>
         </VStack>
