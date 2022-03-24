@@ -23,7 +23,7 @@ export default function CreateRoom() {
   }, fetcher);
 
   if (error) {
-    router.push('/');
+    router.push("/");
   }
 
   if (!data) {
@@ -44,9 +44,15 @@ export default function CreateRoom() {
             <Heading>YOUR ROOM WAS CREATED</Heading>
             <Text>Send your room code to your friend</Text>
             <Container>
-              <Input disabled value={router.query.id} textAlign='center' fontSize='4xl' py='10' />
+              <Input
+                disabled
+                value={router.query.id}
+                textAlign="center"
+                fontSize="4xl"
+                py="10"
+              />
             </Container>
-            <Link href={`/room/${router.query.id}/waiting`}>
+            <Link href={`/room/${router.query.id}/waiting`} passHref>
               <Button
                 borderRadius="30"
                 border="1px"
@@ -58,7 +64,8 @@ export default function CreateRoom() {
                 height="50px"
                 cursor="pointer"
                 _hover={{
-                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  bgGradient:
+                    "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
                 }}
               >
                 Enter

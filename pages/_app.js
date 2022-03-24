@@ -38,8 +38,12 @@ export default function App({ Component, pageProps }) {
           <title>คำต้องห้าม</title>
           <link rel="icon" href="/favicon.ico" />
         </Head>
-        <Box bgImage={'/images/background.png'} h="100vh" backgroundSize={'cover'}>
-        <Component {...pageProps} />
+        <Box
+          bgImage={"/images/background.png"}
+          h="100vh"
+          backgroundSize={"cover"}
+        >
+          <Component {...pageProps} />
         </Box>
       </UserProvider>
     </ChakraProvider>

@@ -6,7 +6,6 @@ import { useRouter } from "next/router";
 import { authFetcher } from "../../../lib/fetcher";
 import { useFirebase } from "../../../firebase/hooks";
 import { axiosInstance } from "../../../lib/axios";
-import { dayjs } from "../../../lib/dayjs";
 import Image from "next/image";
 
 export default function Waiting() {
@@ -60,10 +59,7 @@ export default function Waiting() {
           `/api/room/${router.query.id}/user/${userId}/random-word`
         );
 
-        await Promise.all([
-          set(child(roomRef, "/endTime"), dayjs().add(5, 'minutes').unix()),
-          set(child(roomRef, "/start"), true)
-        ]);
+        await set(child(roomRef, "/start"), true);
       };
 
       return () => {
@@ -73,7 +69,7 @@ export default function Waiting() {
     }
 
     setUserId(localStorage.getItem("fbwg_userid"));
-  }, [db]);
+  }, [db, router, userId]);
 
   if (error) return <Heading>Something went wrong</Heading>;
 
@@ -87,14 +83,14 @@ export default function Waiting() {
               <Box color="white" size='3xl' fontWeight='light'>
                 ROOM CODE: </Box>
               <VStack alignContent="center" fontWeight='bold'
-              borderRadius="10"
-              border="2px"
-              borderColor="white"
-              backgroundColor="white"
-              color="black"
-              fontWeight="bold"
-              width="100px"
-              height="30px"> <Box>{router.query.id}</Box> </VStack>
+                borderRadius="10"
+                border="2px"
+                borderColor="white"
+                backgroundColor="white"
+                color="black"
+                fontWeight="bold"
+                width="100px"
+                height="30px"> <Box>{router.query.id}</Box> </VStack>
             </HStack>
 
             <Box >
@@ -137,8 +133,12 @@ export default function Waiting() {
                 height="50px"
                 cursor="pointer"
                 _hover={{
-                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-                }}>Start</Button>
+                  bgGradient:
+                    "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                }}
+              >
+                Start
+              </Button>
             )}
           </VStack>
         </Center>

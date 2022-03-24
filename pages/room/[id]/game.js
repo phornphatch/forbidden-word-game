@@ -1,36 +1,65 @@
 import { VStack, Box, Heading, Text, Button, Center } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import { authFetcher } from "../../../lib/fetcher";
 import { dayjs } from "../../../lib/dayjs";
+import { axiosInstance } from "../../../lib/axios";
 import { useFirebase } from "../../../firebase/hooks";
 import { child, get, onValue, ref, set } from "firebase/database";
 
+const ROUND_LIMIT = 7;
+const roundStatuses = {
+  INIT: "init",
+  RUNNING: "running",
+  LOADING: "loading",
+  ENDED: "ended",
+};
+
+function roundStatusUpdater(roundStatus, setRoundStatus, useSWRNext) {
+  return (key, fetcher, config) => {
+    const swr = useSWRNext(key, fetcher, config);
+    if (roundStatus === roundStatuses.LOADING) {
+      setRoundStatus(roundStatuses.INIT);
+    }
+    return swr;
+  };
+}
+
+function atRoundLimit(currentRound, roundLimit) {
+  return currentRound === roundLimit;
+}
+
 export default function Game() {
+  const interval = useRef();
   const [userId, setUserId] = useState(null);
   const [username, setUsername] = useState(null);
   const [endTime, setEndTime] = useState(null);
-  const [roundEnded, setRoundEnded] = useState(false);
+  const [roundStatus, setRoundStatus] = useState("init");
   const [displayedTimer, setDisplayedTimer] = useState();
   const [isCreator, setIsCreator] = useState(false);
   const [myWord, setMyWord] = useState("");
+  const [round, setRound] = useState(1);
   const router = useRouter();
   const { db } = useFirebase();
-  const { data, error } = useSWR(() => {
-    if (router.query.id) {
-      return [`/api/room/${router.query.id}/user/${userId}/game`];
+  const { data, error, mutate } = useSWR(
+    () => {
+      if (router.query.id) {
+        return [`/api/room/${router.query.id}/user/${userId}/game`];
+      }
+      return null;
+    },
+    authFetcher,
+    {
+      use: [
+        (useSWRNext) =>
+          roundStatusUpdater(roundStatus, setRoundStatus, useSWRNext),
+      ],
     }
-    return null;
-  }, authFetcher);
+  );
 
-  if (error) {
-    console.error("error fetching game data", error);
-    return <Heading>Something weng wrong</Heading>;
-  }
-
-  let interval;
-  const timerInterval = () => {
+  const timerInterval = useCallback(() => {
     return setInterval(() => {
       const timeLeftInSeconds = dayjs.unix(endTime).diff(dayjs(), "s");
       if (timeLeftInSeconds > 0) {
@@ -42,12 +71,12 @@ export default function Game() {
         }
         setDisplayedTimer(formattedSecondsLeft);
       } else {
-        clearInterval(interval);
-        setRoundEnded(true);
+        clearInterval(interval.current);
+        setRoundStatus(roundStatuses.ENDED);
         setDisplayedTimer("Times up!");
       }
     }, 1000);
-  };
+  }, [endTime]);
 
   useEffect(() => {
     if (
@@ -59,16 +88,7 @@ export default function Game() {
 
     setUserId(localStorage.getItem("fbwg_userid"));
     setUsername(localStorage.getItem("fbwg_username"));
-
-    if (!endTime && data?.endTime) {
-      setEndTime(data.endTime);
-    }
-
-    if (endTime) {
-      interval = timerInterval();
-      return () => clearInterval(interval);
-    }
-  }, [endTime, data]);
+  }, [router]);
 
   useEffect(() => {
     if (db) {
@@ -83,11 +103,10 @@ export default function Game() {
 
       const unsubscribe = onValue(child(roomRef, "/endTime"), (snapshot) => {
         if (snapshot.exists()) {
-          if (endTime !== snapshot.val()) {
-            clearInterval(interval);
-            setEndTime(snapshot.val());
-            interval = timerInterval();
-          }
+          clearInterval(interval.current);
+          setEndTime(snapshot.val());
+          setRoundStatus(roundStatuses.RUNNING);
+          interval.current = timerInterval();
         }
       });
 
@@ -106,79 +125,133 @@ export default function Game() {
         }
       );
 
+      const unsubscribeRound = onValue(child(roomRef, "/round"), (snapshot) => {
+        if (snapshot.exists()) {
+          setRound(snapshot.val());
+        }
+      });
+
+      const unsubscribeEnded = onValue(child(roomRef, "/ended"), (snapshot) => {
+        if (snapshot.exists && snapshot.val()) {
+          router.push(`/room/${router.query.id}/leaderboard`);
+        }
+      });
+
       return () => {
         unsubscribe();
         unsubscribeShowAnswer();
-        clearInterval(interval);
+        unsubscribeRound();
+        unsubscribeEnded();
+        clearInterval(interval.current);
       };
     }
-  }, [db]);
+  }, [db, endTime, router, router.query.id, timerInterval, userId, username]);
+
+  if (error) {
+    console.error("error fetching game data", error);
+    return <Heading>Something weng wrong</Heading>;
+  }
 
   return (
     <main>
       <VStack alignContent="center">
         <Center h="100vh" color="white" marginTop="-90px">
           <VStack spacing={6}>
-          <Heading>Timer: {displayedTimer || "00:00"}</Heading>
-        <Text>Your score: {username} - 0</Text>
-        {myWord !== "" && <Text>Your word: {myWord}</Text>}
-        {data?.users.map((p) => (
-          <Box key={p.word}>
-            user: {p.name} word: {p.word || "-"} point: {p.point}
-          </Box>
-        ))}
+            <Heading>Timer: {displayedTimer || "-"}</Heading>
+            {!atRoundLimit(round, ROUND_LIMIT) && <Heading>Round: {round}</Heading>}
+            <Text>Your score: {username} - 0</Text>
+            {myWord !== "" && <Text>Your word: {myWord}</Text>}
+            {data?.users?.map((p) => (
+              <Box key={p.word}>
+                user: {p.name} word: {p.word || "-"} point: {p.point}
+              </Box>
+            ))}
+            {!atRoundLimit(round, ROUND_LIMIT) &&
+              roundStatus === roundStatuses.INIT &&
+              isCreator && (
+                <Button
+                  onClick={async () => {
+                    const roomRef = ref(db, `/${router.query.id}`);
+                    await set(
+                      child(roomRef, "/endTime"),
+                      dayjs().add(10, "seconds").unix()
+                    );
+                  }}
+                  borderRadius="30"
+                  border="1px"
+                  borderColor="white"
+                  backgroundColor="rgba(225, 225, 225, 0.3)"
+                  color="white"
+                  fontWeight="bold"
+                  width="400px"
+                  height="50px"
+                  cursor="pointer"
+                  _hover={{
+                    bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  }}
+                >
+                  Start timer
+                </Button>
+              )}
 
-        {isCreator && roundEnded && (
-          <>
-            <Button
-              onClick={async () => {
-                const roomRef = ref(db, `/${router.query.id}`);
-                await set(child(roomRef, "/showAnswer"), true);
-              }}
-              borderRadius="30"
-              border="1px"
-              borderColor="white"
-              backgroundColor="rgba(225, 225, 225, 0.3)"
-              color="white"
-              fontWeight="bold"
-              width="400px"
-              height="50px"
-              cursor="pointer"
-              _hover={{
-                bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-              }}
+            {!atRoundLimit(round, ROUND_LIMIT) &&
+              isCreator &&
+              roundStatus === roundStatuses.ENDED && (
+                <>
+                  <Button
+                    onClick={async () => {
+                      const roomRef = ref(db, `/${router.query.id}`);
+                      await set(child(roomRef, "/showAnswer"), true);
+                    }}
+                    borderRadius="30"
+                    border="1px"
+                    borderColor="white"
+                    backgroundColor="rgba(225, 225, 225, 0.3)"
+                    color="white"
+                    fontWeight="bold"
+                    width="400px"
+                    height="50px"
+                    cursor="pointer"
+                    _hover={{
+                      bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                    }}
+                  >
+                    Show words
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      const roomRef = ref(db, `/${router.query.id}`);
+                      // Only random words if next round is a valid round
+                      if (round + 1 !== ROUND_LIMIT) {
+                        await Promise.all([
+                          axiosInstance.get(
+                            `/api/room/${router.query.id}/user/${userId}/random-word`
+                          ),
+                          set(child(roomRef, "/showAnswer"), false),
+                          set(child(roomRef, "/round"), round + 1),
+                        ]);
+                        setRoundStatus(roundStatuses.LOADING);
+                        mutate(`/api/room/${router.query.id}/user/${userId}/game`);
+                      } else {
+                        await set(child(roomRef, "/round"), round + 1);
+                      }
+                    }}
+                  >
+                    Next round
+                  </Button>
+                </>
+              )}
+
+            {atRoundLimit(round, ROUND_LIMIT) && (
+              <Button
+                onClick={async () => {
+                  const roomRef = ref(db, `/${router.query.id}`);
+                  await set(child(roomRef, "/ended"), true);
+                }}
               >
-              Show answer
-            </Button>
-            <Button
-              onClick={async () => {
-                const roomRef = ref(db, `/${router.query.id}`);
-                await Promise.all([
-                  set(child(roomRef, "/showAnswer"), false),
-                  set(
-                    child(roomRef, "/endTime"),
-                    dayjs().add(5, "minutes").unix()
-                  ),
-                ]);
-                setRoundEnded(false);
-              }}
-              borderRadius="30"
-              border="1px"
-              borderColor="white"
-              backgroundColor="rgba(225, 225, 225, 0.3)"
-              color="white"
-              fontWeight="bold"
-              width="400px"
-              height="50px"
-              cursor="pointer"
-              _hover={{
-                bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-              }}
-              >
-              New round
-            </Button>
-          </>
-        )}
+                End Game
+              </Button>
+            )}
           </VStack>
         </Center>
       </VStack>
