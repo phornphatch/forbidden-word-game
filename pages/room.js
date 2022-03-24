@@ -43,13 +43,13 @@ export default function CreatRoom() {
         <VStack alignContent="center">
           <Center h="100vh" color="white" marginTop="-50px">
             <VStack spacing={8}>
-              <Heading color="white" paddingBottom="20px">
+              <Heading color="white" paddingBottom="20px" size='3xl' fontWeight='light' textTransform="uppercase">
               {username}
               </Heading>
               <HStack spacing={5}>
               <Box><Image src="/images/host.png" width="100px" height="127px" /></Box>
               <VStack alignItems="flex-start">
-                <Box>HOST</Box>
+                <Heading>HOST</Heading>
               <Button
                 onClick={async () => {
                   const { data } = await axiosInstance.post(
@@ -64,7 +64,7 @@ export default function CreatRoom() {
                 backgroundColor="rgba(225, 225, 225, 0.3)"              
                 color="white"
                 fontWeight="bold"
-                width="300px"
+                width="400px"
                 height="50px"
                 cursor="pointer"
                 _hover={{
@@ -81,8 +81,8 @@ export default function CreatRoom() {
               <Text color="white"> - or - </Text>
               <HStack spacing={5}>
               <Box><Image src="/images/players.png" width="150px" height="144px" /></Box>
-              <VStack>
-                <Box>Play with friends</Box>
+              <VStack alignItems="flex-start">
+                <Heading>Play with friends</Heading>
                
                 <form onSubmit={handleSubmit(async (data) => {
                  try {
@@ -107,7 +107,7 @@ export default function CreatRoom() {
                       borderRadius="30"
                       placeholder="ENTER ROOM CODE HERE"
                       color="white"
-                      width="250px"
+                      width="300px"
                       height="50px"
                     />
                     {errors.roomId && <span>Room ID is required.</span>}
@@ -118,7 +118,7 @@ export default function CreatRoom() {
                       backgroundColor="rgba(225, 225, 225, 0.3)"              
                       color="white"
                       fontWeight="bold"
-                      width="80px"
+                      width="130px"
                       height="50px"
                       cursor="pointer"
                       _hover={{

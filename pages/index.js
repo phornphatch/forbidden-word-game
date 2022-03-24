@@ -73,7 +73,7 @@ export default function CreatePlayer() {
                   borderRadius="30"
                   placeholder="ENTER YOUR NAME HERE"
                   color="white"
-                  width="300px"
+                  width="400px"
                   height="50px"
                 />
                 {errors.username && <span>username is required.</span>}
@@ -84,7 +84,7 @@ export default function CreatePlayer() {
                   backgroundColor="rgba(225, 225, 225, 0.3)"
                   color="white"
                   fontWeight="bold"
-                  width="300px"
+                  width="400px"
                   height="50px"
                   cursor="pointer"
                   _hover={{

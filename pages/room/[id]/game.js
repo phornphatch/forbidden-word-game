@@ -1,4 +1,4 @@
-import { VStack, Box, Heading, Text, Button } from "@chakra-ui/react";
+import { VStack, Box, Heading, Text, Button, Center } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import useSWR from "swr";
@@ -116,8 +116,10 @@ export default function Game() {
 
   return (
     <main>
-      <VStack>
-        <Heading>Timer: {displayedTimer || "00:00"}</Heading>
+      <VStack alignContent="center">
+        <Center h="100vh" color="white" marginTop="-90px">
+          <VStack spacing={6}>
+          <Heading>Timer: {displayedTimer || "00:00"}</Heading>
         <Text>Your score: {username} - 0</Text>
         {myWord !== "" && <Text>Your word: {myWord}</Text>}
         {data?.users.map((p) => (
@@ -133,7 +135,19 @@ export default function Game() {
                 const roomRef = ref(db, `/${router.query.id}`);
                 await set(child(roomRef, "/showAnswer"), true);
               }}
-            >
+              borderRadius="30"
+              border="1px"
+              borderColor="white"
+              backgroundColor="rgba(225, 225, 225, 0.3)"
+              color="white"
+              fontWeight="bold"
+              width="400px"
+              height="50px"
+              cursor="pointer"
+              _hover={{
+                bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+              }}
+              >
               Show answer
             </Button>
             <Button
@@ -148,11 +162,25 @@ export default function Game() {
                 ]);
                 setRoundEnded(false);
               }}
-            >
+              borderRadius="30"
+              border="1px"
+              borderColor="white"
+              backgroundColor="rgba(225, 225, 225, 0.3)"
+              color="white"
+              fontWeight="bold"
+              width="400px"
+              height="50px"
+              cursor="pointer"
+              _hover={{
+                bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+              }}
+              >
               New round
             </Button>
           </>
         )}
+          </VStack>
+        </Center>
       </VStack>
     </main>
   );

@@ -1,4 +1,4 @@
-import { VStack, Box, Heading, Button, Text, Center } from "@chakra-ui/react";
+import { VStack, Box, Heading, Button, Text, Center, Container, HStack } from "@chakra-ui/react";
 import { onValue, child, ref, get, set } from "firebase/database";
 import useSWR from "swr";
 import { useEffect, useState, useRef } from "react";
@@ -7,6 +7,7 @@ import { authFetcher } from "../../../lib/fetcher";
 import { useFirebase } from "../../../firebase/hooks";
 import { axiosInstance } from "../../../lib/axios";
 import { dayjs } from "../../../lib/dayjs";
+import Image from "next/image";
 
 export default function Waiting() {
   const startGame = useRef();
@@ -58,7 +59,7 @@ export default function Waiting() {
         await axiosInstance.get(
           `/api/room/${router.query.id}/user/${userId}/random-word`
         );
-      
+
         await Promise.all([
           set(child(roomRef, "/endTime"), dayjs().add(5, 'minutes').unix()),
           set(child(roomRef, "/start"), true)
@@ -78,31 +79,68 @@ export default function Waiting() {
 
   return (
     <main>
-      <VStack  alignContent="center">
-      <Center h="100vh" color="white" marginTop="-50px">
-      <VStack spacing={8}>
-        <Heading size="2xl">Waiting for players...</Heading>
-        <Heading size="xl">Room: {router.query.id}</Heading>
-        {!users && <Text>Loading</Text>}
-        {users?.map((p) => (
-          <Box key={p.name}>{p.name}</Box>
-        ))}
-        {isCreator && (
-          <Button onClick={async () => await startGame.current()}
-          borderRadius="30"
+      <VStack alignContent="center">
+        <Center h="100vh" color="white" marginTop="-90px">
+          <VStack spacing={6}>
+            <Heading >WAITING FOR PLAYERS. .</Heading>
+            <HStack>
+              <Box color="white" size='3xl' fontWeight='light'>
+                ROOM CODE: </Box>
+              <VStack alignContent="center" fontWeight='bold'
+              borderRadius="10"
+              border="2px"
+              borderColor="white"
+              backgroundColor="white"
+              color="black"
+              fontWeight="bold"
+              width="100px"
+              height="30px"> <Box>{router.query.id}</Box> </VStack>
+            </HStack>
+
+            <Box >
+              <Image
+                src="/images/waiting.png"
+                width={178}
+                height={128}
+              />
+            </Box>
+
+            {!users &&
+              <VStack alignContent="center">
+                <Center color="white">
+                  <Heading>Loading . . </Heading>
+                </Center>
+              </VStack>
+            }
+            {users?.map((p) => (
+              <VStack key={p.name} borderRadius="10"
+                border="1px"
+                borderColor="white"
+                width="400px"
+                height="50px"
+                alignItems="center"
+                margin="auto"
+                justifyContent="center"
+              >
+                <Box>{p.name}</Box>
+              </VStack>
+            ))}
+            {isCreator && (
+              <Button onClick={async () => await startGame.current()}
+                borderRadius="30"
                 border="1px"
                 borderColor="white"
                 backgroundColor="rgba(225, 225, 225, 0.3)"
                 color="white"
                 fontWeight="bold"
-                width="300px"
+                width="400px"
                 height="50px"
                 cursor="pointer"
                 _hover={{
                   bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
                 }}>Start</Button>
-        )}
-        </VStack>
+            )}
+          </VStack>
         </Center>
       </VStack>
     </main>

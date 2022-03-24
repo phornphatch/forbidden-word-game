@@ -23,11 +23,17 @@ export default function CreateRoom() {
   }, fetcher);
 
   if (error) {
-    router.push('/')
+    router.push('/');
   }
 
   if (!data) {
-    return <Center><Heading>Loading...</Heading></Center>
+    return (
+      <VStack alignContent="center">
+        <Center h="100vh" color="white" marginTop="-50px">
+          <Heading>Loading . . </Heading>
+        </Center>
+      </VStack>
+    );
   }
 
   return (

@@ -23,6 +23,10 @@ const theme = extendTheme({
       300: "#43A2F4",
     },
   },
+  fonts: {
+    heading: 'Open Sans, sans-serif',
+    body: 'Raleway, sans-serif',
+  },
 });
 
 // Custom App to wrap it with context provider
