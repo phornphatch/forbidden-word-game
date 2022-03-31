@@ -9,16 +9,14 @@ import {
   Container,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
-import { useState, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
-import useSWR from "swr";
-import { authFetcher } from "../../../lib/fetcher";
+import { useState, useEffect, useRef } from "react";
 import { dayjs } from "../../../lib/dayjs";
 import { axiosInstance } from "../../../lib/axios";
 import { useFirebase } from "../../../firebase/hooks";
 import { child, get, onValue, ref, set } from "firebase/database";
 import Image from "next/image";
 import { isEqual } from "lodash";
+import getConfig from "next/config";
 
 const ROUND_LIMIT = 7;
 const roundStatuses = {
@@ -27,6 +25,8 @@ const roundStatuses = {
   LOADING: "loading",
   ENDED: "ended",
 };
+
+const { publicRuntimeConfig } = getConfig();
 
 function atRoundLimit(currentRound, roundLimit) {
   return currentRound >= roundLimit;
@@ -298,7 +298,7 @@ export default function Game() {
                     const roomRef = ref(db, `/${router.query.id}`);
                     await set(
                       child(roomRef, "/endTime"),
-                      dayjs().add(3, "minutes").unix()
+                      dayjs().add(publicRuntimeConfig.roundDurationInMin, "minutes").unix()
                     );
                   }}
                   borderRadius="30"
