@@ -9,12 +9,61 @@ import {
   Center,
   HStack,
   Box,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalCloseButton,
+  ModalFooter,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { axiosInstance } from "../lib/axios";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+
+function HowtoPlayModal() {
+  const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: true });
+  return (
+    <>
+      <Button
+        onClick={onOpen}
+        borderRadius="30"
+        border="1px"
+        borderColor="white"
+        backgroundColor="rgba(225, 225, 225, 0.3)"
+        color="white"
+        fontWeight="bold"
+        width="300px"
+        height="50px"
+        cursor="pointer"
+        _hover={{
+          bgGradient:
+            "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+        }}
+      >
+        HOW TO PLAY?
+      </Button>
+
+      <Modal isOpen={isOpen} onClose={onClose}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>How to play?</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>This is body</ModalBody>
+
+          <ModalFooter>
+            <Button colorScheme="blue" mr={3} onClick={onClose}>
+              Close
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
+  );
+}
 
 export default function CreatRoom() {
   const router = useRouter();
@@ -32,7 +81,7 @@ export default function CreatRoom() {
       setUsername(localStorage.getItem("fbwg_username"));
       setUserId(localStorage.getItem("fbwg_userid"));
     }
-  }, []);
+  }, [router]);
 
   const {
     register,
@@ -46,12 +95,23 @@ export default function CreatRoom() {
         <VStack alignContent="center">
           <Center h="100vh" color="white" marginTop="-40px">
             <VStack spacing={8}>
-              <Heading color="white" paddingBottom="20px" size="2xl" fontWeight="light" textTransform="uppercase">
+              <Heading
+                color="white"
+                paddingBottom="20px"
+                size="2xl"
+                fontWeight="light"
+                textTransform="uppercase"
+              >
                 {username}
               </Heading>
               <HStack spacing={5}>
                 <Box>
-                  <Image src="/images/host.png" width="100px" height="127px" />
+                  <Image
+                    src="/images/host.png"
+                    width="100px"
+                    height="127px"
+                    alt="oopsie king"
+                  />
                 </Box>
                 <VStack alignItems="flex-start">
                   <Heading size="xl">HOST</Heading>
@@ -89,10 +149,11 @@ export default function CreatRoom() {
                     src="/images/players.png"
                     width="150px"
                     height="144px"
+                    alt="oopsie group"
                   />
                 </Box>
                 <VStack alignItems="flex-start">
-                <Heading size="xl">Play with friends</Heading>
+                  <Heading size="xl">Play with friends</Heading>
 
                   <form
                     onSubmit={handleSubmit(async (data) => {
@@ -146,6 +207,7 @@ export default function CreatRoom() {
                   </form>
                 </VStack>
               </HStack>
+              <HowtoPlayModal />
             </VStack>
           </Center>
         </VStack>
