@@ -14,7 +14,5 @@ export default async function handler(req, res) {
 
   await setUsers(req.query.id, newUsers);
 
-  console.log('random');
-
   return res.status(200).send();
 }

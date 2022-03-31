@@ -1,4 +1,13 @@
-import { VStack, Box, Heading, Text, Button, Center, HStack, Container } from "@chakra-ui/react";
+import {
+  VStack,
+  Box,
+  Heading,
+  Text,
+  Button,
+  Center,
+  HStack,
+  Container,
+} from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
@@ -68,7 +77,11 @@ export default function Game() {
     setUserId(localStorage.getItem("fbwg_userid"));
     setUsername(localStorage.getItem("fbwg_username"));
     const getUsers = async (roomId) => {
-      const { data: { users } } = await axiosInstance.get(`/api/room/${roomId}/user/${localStorage.getItem("fbwg_userid")}/game`);
+      const {
+        data: { users },
+      } = await axiosInstance.get(
+        `/api/room/${roomId}/user/${localStorage.getItem("fbwg_userid")}/game`
+      );
       setUsers(users);
     };
     if (router.query.id) {
@@ -89,7 +102,6 @@ export default function Game() {
 
       const unsubscribe = onValue(child(roomRef, "/endTime"), (snapshot) => {
         if (snapshot.exists()) {
-          console.log("endTime");
           clearInterval(interval.current);
           setEndTime(snapshot.val());
           setRoundStatus(roundStatuses.RUNNING);
@@ -113,9 +125,7 @@ export default function Game() {
       );
 
       const unsubscribeRound = onValue(child(roomRef, "/round"), (snapshot) => {
-        console.log("round");
         if (snapshot.exists() && snapshot.val() !== round) {
-          console.log("round2");
           setRound(snapshot.val());
         }
       });
@@ -127,7 +137,9 @@ export default function Game() {
       });
 
       const unsubscribeUsers = onValue(child(roomRef, "/users"), (snapshot) => {
-        const otherUsers = snapshot.val().filter((u) => u.id !== localStorage.getItem("fbwg_userid"));
+        const otherUsers = snapshot
+          .val()
+          .filter((u) => u.id !== localStorage.getItem("fbwg_userid"));
         if (snapshot.exists() && !isEqual(users, otherUsers)) {
           setUsers(otherUsers);
           clearInterval(interval.current);
@@ -145,16 +157,19 @@ export default function Game() {
         clearInterval(interval.current);
       };
     }
-  }, [db, endTime, router, router.query.id, userId, username, round]);
+  }, [db, endTime, router, router.query.id, userId, username, round, users]);
 
   return (
     <main>
       <VStack alignContent="center">
         <Center h="100vh" color="white">
           <VStack spacing={6}>
-            {!atRoundLimit(round, ROUND_LIMIT) && <Heading>ROUND {round}</Heading>}
+            {!atRoundLimit(round, ROUND_LIMIT) && (
+              <Heading>ROUND {round}</Heading>
+            )}
             <HStack>
-              <VStack alignContent="center"
+              <VStack
+                alignContent="center"
                 borderRadius="10"
                 border="2px"
                 borderColor="white"
@@ -171,12 +186,104 @@ export default function Game() {
             {myWord !== "" && <Text>Your word: {myWord}</Text>}
             <HStack>
               {users?.map((p) => (
-                <Container key={p.id} border="1px" borderColor="white" borderStyle="dashed" borderRadius="10" width="130px" padding={3}>
+                <Container
+                  key={p.id}
+                  border="1px"
+                  borderColor="white"
+                  borderStyle="dashed"
+                  borderRadius="10"
+                  minW="130px"
+                  padding={3}
+                >
                   <VStack spacing={2}>
                     <Heading size="md">&quot; {p.word || "-"} &quot;</Heading>
-                    <Box><Image src="/images/oopsie-orange.png" width="80px" height="85px" /></Box>
-                    <Heading size="sm">{p.name}  </Heading>
-                    <Heading size="sm" fontWeight="light">point: {p.point}</Heading>
+                    <Box>
+                      <Image
+                        src="/images/oopsie-orange.png"
+                        alt="oopsie orange"
+                        width="80px"
+                        height="85px"
+                      />
+                    </Box>
+                    <Heading size="sm">{p.name} </Heading>
+                    <Heading size="sm" fontWeight="light">
+                      {isCreator && (
+                        <HStack>
+                          <Button
+                            borderColor="white"
+                            backgroundColor="rgba(225, 225, 225, 0.3)"
+                            _hover={{
+                              bgGradient:
+                                "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                            }}
+                            onClick={async () => {
+                              const roomRef = ref(db, `/${router.query.id}`);
+                              const users = await get(child(roomRef, "/users"));
+
+                              let currentUserIndex = -1;
+                              users.val().forEach(({ id }, i) => {
+                                if (
+                                  id === localStorage.getItem("fbwg_userid")
+                                ) {
+                                  currentUserIndex = i;
+                                }
+                              });
+
+                              const updatedUsers = users.val().map((u, i) => {
+                                if (i === currentUserIndex) {
+                                  return {
+                                    ...u,
+                                    point: u.point + 1,
+                                  };
+                                }
+                                return u;
+                              });
+
+                              await set(child(roomRef, "/users"), updatedUsers);
+                            }}
+                          >
+                            +
+                          </Button>
+                          <Box>point: {p.point}</Box>
+                          <Button
+                            borderColor="white"
+                            backgroundColor="rgba(225, 225, 225, 0.3)"
+                            _hover={{
+                              bgGradient:
+                                "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                            }}
+                            onClick={async () => {
+                              const roomRef = ref(db, `/${router.query.id}`);
+                              const users = await get(child(roomRef, "/users"));
+
+                              let currentUserIndex = -1;
+                              users.val().forEach(({ id }, i) => {
+                                if (
+                                  id === localStorage.getItem("fbwg_userid")
+                                ) {
+                                  currentUserIndex = i;
+                                }
+                              });
+
+                              const updatedUsers = users.val().map((u, i) => {
+                                if (i === currentUserIndex) {
+                                  return {
+                                    ...u,
+                                    point: u.point - 1,
+                                  };
+                                }
+                                return u;
+                              });
+
+                              await set(child(roomRef, "/users"), updatedUsers);
+                            }}
+                          >
+                            -
+                          </Button>
+                        </HStack>
+                      )}
+                      {!isCreator && <Box>point: {p.point}</Box>}
+                    </Heading>
                   </VStack>
                 </Container>
               ))}
@@ -204,14 +311,14 @@ export default function Game() {
                   height="50px"
                   cursor="pointer"
                   _hover={{
-                    bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                    bgGradient:
+                      "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
                   }}
                 >
                   Start timer
                 </Button>
               )}
-            {isCreator &&
-              roundStatus === roundStatuses.ENDED &&
+            {isCreator && roundStatus === roundStatuses.ENDED && (
               <Button
                 onClick={async () => {
                   const roomRef = ref(db, `/${router.query.id}`);
@@ -227,12 +334,13 @@ export default function Game() {
                 height="50px"
                 cursor="pointer"
                 _hover={{
-                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  bgGradient:
+                    "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
                 }}
               >
                 Show words
               </Button>
-            }
+            )}
 
             {!atRoundLimit(round + 1, ROUND_LIMIT) &&
               isCreator &&
@@ -242,8 +350,6 @@ export default function Game() {
                     const roomRef = ref(db, `/${router.query.id}`);
                     // Only random words if next round is a valid round
                     if (round + 1 !== ROUND_LIMIT) {
-                      // setRoundStatus(roundStatuses.LOADING);
-                      console.log('loading');
                       await Promise.all([
                         axiosInstance.get(
                           `/api/room/${router.query.id}/user/${userId}/random-word`
@@ -265,54 +371,30 @@ export default function Game() {
                   height="50px"
                   cursor="pointer"
                   _hover={{
-                    bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                    bgGradient:
+                      "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
                   }}
                 >
                   Next round
                 </Button>
               )}
-            {
-              isCreator &&
-              roundStatus === roundStatuses.RUNNING && (
-                <Button
-                  onClick={async () => {
-                    const roomRef = ref(db, `/${router.query.id}`);
-                    // Only random words if next round is a valid round
-                    if (round + 1 !== ROUND_LIMIT) {
-                      setRoundStatus(roundStatuses.LOADING);
-                      await Promise.all([
-                        axiosInstance.get(
-                          `/api/room/${router.query.id}/user/${userId}/random-word`
-                        ),
-                        set(child(roomRef, "/showAnswer"), false),
-                        set(child(roomRef, "/round"), round + 1),
-                      ]);
-                    } else {
-                      await set(child(roomRef, "/round"), round + 1);
-                    }
-                  }}
-                  borderRadius="30"
-                  border="1px"
-                  borderColor="white"
-                  backgroundColor="rgba(225, 225, 225, 0.3)"
-                  color="white"
-                  fontWeight="bold"
-                  width="400px"
-                  height="50px"
-                  cursor="pointer"
-                  _hover={{
-                    bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
-                  }}
-                >
-                  End round
-                </Button>
-              )}
-
-            {atRoundLimit(round + 1, ROUND_LIMIT) && roundStatus === roundStatuses.ENDED && isCreator && (
+            {isCreator && roundStatus === roundStatuses.RUNNING && (
               <Button
                 onClick={async () => {
                   const roomRef = ref(db, `/${router.query.id}`);
-                  await set(child(roomRef, "/ended"), true);
+                  // Only random words if next round is a valid round
+                  if (round + 1 !== ROUND_LIMIT) {
+                    setRoundStatus(roundStatuses.LOADING);
+                    await Promise.all([
+                      axiosInstance.get(
+                        `/api/room/${router.query.id}/user/${userId}/random-word`
+                      ),
+                      set(child(roomRef, "/showAnswer"), false),
+                      set(child(roomRef, "/round"), round + 1),
+                    ]);
+                  } else {
+                    await set(child(roomRef, "/round"), round + 1);
+                  }
                 }}
                 borderRadius="30"
                 border="1px"
@@ -324,12 +406,39 @@ export default function Game() {
                 height="50px"
                 cursor="pointer"
                 _hover={{
-                  bgGradient: "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  bgGradient:
+                    "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
                 }}
               >
-                End Game
+                End round
               </Button>
             )}
+
+            {atRoundLimit(round + 1, ROUND_LIMIT) &&
+              roundStatus === roundStatuses.ENDED &&
+              isCreator && (
+                <Button
+                  onClick={async () => {
+                    const roomRef = ref(db, `/${router.query.id}`);
+                    await set(child(roomRef, "/ended"), true);
+                  }}
+                  borderRadius="30"
+                  border="1px"
+                  borderColor="white"
+                  backgroundColor="rgba(225, 225, 225, 0.3)"
+                  color="white"
+                  fontWeight="bold"
+                  width="400px"
+                  height="50px"
+                  cursor="pointer"
+                  _hover={{
+                    bgGradient:
+                      "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  }}
+                >
+                  End Game
+                </Button>
+              )}
           </VStack>
         </Center>
       </VStack>
