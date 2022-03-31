@@ -7,6 +7,7 @@ import {
   Center,
   HStack,
   Container,
+  Grid,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { useState, useEffect, useRef } from "react";
@@ -218,7 +219,7 @@ export default function Game() {
             </HStack>
 
             {myWord !== "" && <Text>Your word: {myWord}</Text>}
-            <Text>Your points: {self.point ?? "-"}</Text>
+            {!isCreator && (<Text>Your points: {self.point ?? "-"}</Text>)}
             {isCreator && (
               <HStack>
                 <Button
@@ -254,6 +255,7 @@ export default function Game() {
                 >
                   -
                 </Button>
+                <Text>Your points: {self.point ?? "-"}</Text>
                 <Button
                   borderColor="white"
                   backgroundColor="rgba(225, 225, 225, 0.3)"
@@ -289,7 +291,7 @@ export default function Game() {
                 </Button>
               </HStack>
             )}
-            <HStack>
+            <Grid templateColumns='repeat(4, 1fr)' gap={5}>
               {users?.map((p) => (
                 <Container
                   key={p.id}
@@ -297,7 +299,7 @@ export default function Game() {
                   borderColor="white"
                   borderStyle="dashed"
                   borderRadius="10"
-                  minW="130px"
+                  minW="150px"
                   padding={3}
                 >
                   <VStack spacing={2}>
@@ -306,8 +308,8 @@ export default function Game() {
                       <Image
                         src="/images/oopsie-orange.png"
                         alt="oopsie orange"
-                        width="80px"
-                        height="85px"
+                        width="70px"
+                        height="76px"
                       />
                     </Box>
                     <Heading size="sm">{p.name} </Heading>
@@ -392,7 +394,7 @@ export default function Game() {
                   </VStack>
                 </Container>
               ))}
-            </HStack>
+            </Grid>
 
             {!atRoundLimit(round, ROUND_LIMIT) &&
               roundStatus === roundStatuses.INIT &&

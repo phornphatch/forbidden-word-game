@@ -1,4 +1,4 @@
-import { VStack, Box, Heading, Button, Text, Center, Container, HStack } from "@chakra-ui/react";
+import { VStack, Box, Heading, Button, Text, Center, Container, HStack, Grid } from "@chakra-ui/react";
 import { onValue, child, ref, get, set } from "firebase/database";
 import useSWR from "swr";
 import { useEffect, useState, useRef } from "react";
@@ -76,7 +76,7 @@ export default function Waiting() {
   return (
     <main>
       <VStack alignContent="center">
-        <Center h="100vh" color="white" marginTop="-90px">
+        <Center h="100vh" color="white">
           <VStack spacing={6}>
             <Heading >WAITING FOR PLAYERS. .</Heading>
             <HStack>
@@ -110,12 +110,13 @@ export default function Waiting() {
                 </Center>
               </VStack>
             }
+            <Grid templateColumns='repeat(2, 1fr)' gap={3}>
             {users?.map((p) => (
               <VStack key={p.name} borderRadius="10"
                 border="1px"
                 borderColor="white"
-                width="400px"
-                height="50px"
+                width="170px"
+                height="40px"
                 alignItems="center"
                 margin="auto"
                 justifyContent="center"
@@ -123,6 +124,8 @@ export default function Waiting() {
                 <Box>{p.name}</Box>
               </VStack>
             ))}
+            </Grid>
+
             {isCreator && (
               <Button onClick={async () => await startGame.current()}
                 borderRadius="30"
