@@ -56,6 +56,7 @@ export default function CreatePlayer() {
                     src="/images/logo-white.png"
                     width={300}
                     height={140}
+                    alt="oopsie logo"
                   />
                 </Box>
                 <Box>
@@ -63,6 +64,7 @@ export default function CreatePlayer() {
                     src="/images/oopsie-purple.png"
                     width={120}
                     height={128}
+                    alt="oopsie purple"
                   />
                 </Box>
                 <Input
