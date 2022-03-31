@@ -223,6 +223,8 @@ export default function Game() {
             {isCreator && (
               <HStack>
                 <Button
+                borderRadius="3xl"
+                size="xs"
                   borderColor="white"
                   backgroundColor="rgba(225, 225, 225, 0.3)"
                   _hover={{
@@ -257,6 +259,8 @@ export default function Game() {
                 </Button>
                 <Text>Your points: {self.point ?? "-"}</Text>
                 <Button
+                borderRadius="3xl"
+                size="xs"
                   borderColor="white"
                   backgroundColor="rgba(225, 225, 225, 0.3)"
                   _hover={{
@@ -317,6 +321,8 @@ export default function Game() {
                       {isCreator && (
                         <HStack>
                           <Button
+                          borderRadius="3xl"
+                          size="xs"
                             borderColor="white"
                             backgroundColor="rgba(225, 225, 225, 0.3)"
                             _hover={{
@@ -353,6 +359,8 @@ export default function Game() {
                           </Button>
                           <Box>points: {p.point}</Box>
                           <Button
+                          borderRadius="3xl"
+                          size="xs"
                             borderColor="white"
                             backgroundColor="rgba(225, 225, 225, 0.3)"
                             _hover={{
