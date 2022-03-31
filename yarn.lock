@@ -1181,6 +1181,11 @@
   resolved "https://registry.yarnpkg.com/@firebase/webchannel-wrapper/-/webchannel-wrapper-0.6.0.tgz#e18ea901c84917f8dadd0185048a9d00573fe595"
   integrity sha512-Pz4+7HPzKvOFI1ICQ6pyUv/VgStEWq9IGiVaaV1cQLi66NIA1mD5INnY4CDNoVAxlkuZvDEUZ+cVHLQ8iwA2hQ==
 
+"@fontsource/noto-sans-thai@^4.5.7":
+  version "4.5.7"
+  resolved "https://registry.yarnpkg.com/@fontsource/noto-sans-thai/-/noto-sans-thai-4.5.7.tgz#35881cda59ab7a43037851806f5b2e918c69c9eb"
+  integrity sha512-nTSuFPeMpA766FdLFoFUloFxdZh+IgK7omrQFbi/4HOEGDPxe3gtuCuEVeX6LUma90fdd8vfK9agXxnja8IT9w==
+
 "@google-cloud/common@^3.8.1":
   version "3.10.0"
   resolved "https://registry.yarnpkg.com/@google-cloud/common/-/common-3.10.0.tgz#454d1155bb512109cd83c6183aabbd39f9aabda7"

@@ -1,3 +1,5 @@
+import '@fontsource/noto-sans-thai/thai.css'
+
 import { Box, ChakraProvider } from "@chakra-ui/react";
 import Head from "next/head";
 
@@ -23,8 +25,8 @@ const theme = extendTheme({
     },
   },
   fonts: {
-    heading: 'Open Sans, sans-serif',
-    body: 'Raleway, sans-serif',
+    heading: 'Noto Sans Thai, Open Sans, sans-serif',
+    body: 'Noto Sans Thai, Raleway, sans-serif',
   },
 });
 
