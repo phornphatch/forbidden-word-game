@@ -17,15 +17,17 @@ import {
   ModalCloseButton,
   ModalFooter,
   useDisclosure,
+  Flex,
 } from "@chakra-ui/react";
 import { useRouter } from "next/router";
 import { axiosInstance } from "../lib/axios";
 import { useForm } from "react-hook-form";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
 function HowtoPlayModal() {
   const { isOpen, onOpen, onClose } = useDisclosure({ defaultIsOpen: true });
+
   return (
     <>
       <Button
@@ -33,32 +35,52 @@ function HowtoPlayModal() {
         borderRadius="30"
         border="1px"
         borderColor="white"
-        backgroundColor="rgba(225, 225, 225, 0.3)"
+        bgGradient="linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))"
         color="white"
         fontWeight="bold"
-        width="300px"
+        width="150px"
         height="50px"
         cursor="pointer"
         _hover={{
-          bgGradient:
-            "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+          backgroundColor:"rgba(225, 225, 225, 0.3)"
         }}
       >
-        HOW TO PLAY?
+        กติกา
       </Button>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={onClose} size='xl'>
         <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>How to play?</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>This is body</ModalBody>
+        <ModalContent borderColor="white"
+          backgroundColor="#8C4C94">
+          <Box borderColor="white"
+            backgroundColor="rgba(225, 225, 225, 0.9)" margin="5" borderRadius="10" color="#564681">
+            <ModalHeader><Center fontWeight="bold">กติกา</Center></ModalHeader>
+            <ModalCloseButton padding="30px" />
+            <ModalBody fontWeight="semibold">
+              1. เมื่อกดเริ่มเกม ทุกคนจะได้รับคำต้องห้าม 1 คำ โดยผู้เล่นแต่ละคนจะไม่รู้คำต้องห้ามของตัวเอง
+              <br />
+              2. ใครที่หลุดพูดคำต้องห้ามที่ตนเองได้รับจะต้อง ออกจากเกม
+              <br />
+              <Box>3. ในแต่ละเกมจะให้เวลารอบละ 5 นาที <Box color="#E24D7A" display="inline">ใครเหลือรอดจนหมดเวลาจะได้รับ 1 คะแนน </Box>
+               และ หากผู้ที่เหลือรอดนั้น<Box color="#E24D7A" display="inline"> รู้ว่าคำต้องห้ามของตัวเองคือคำว่าอะไรจะได้คะแนนเพิ่มอีก 1 คะแนน</Box></Box>
 
-          <ModalFooter>
-            <Button colorScheme="blue" mr={3} onClick={onClose}>
-              Close
-            </Button>
-          </ModalFooter>
+              4. ผู้เล่นที่สามารถหลอกล่อให้คนอื่นพูดคำต้องห้ามของเขาได้จะนับว่าทำการ <Box color="#E24D7A" display="inline">kill และได้ 1 คะแนน</Box> จากการ kill นั้น
+            </ModalBody>
+            <Center marginTop="20px">
+              <Image
+                src="/images/rules.png"
+                width={180}
+                height={120}
+                alt="oopsie rules"
+
+              />
+            </Center>
+            <ModalFooter paddingTop="0" marginTop="-60px" >
+              <Button colorScheme="blue" onClick={onClose} backgroundColor="#564681">
+                Close
+              </Button>
+            </ModalFooter>
+          </Box>
         </ModalContent>
       </Modal>
     </>
@@ -93,7 +115,7 @@ export default function CreatRoom() {
     <div className="container">
       <main>
         <VStack alignContent="center">
-          <Center h="100vh" color="white" marginTop="-40px">
+          <Center h="100vh" color="white" marginTop="0px">
             <VStack spacing={8}>
               <Heading
                 color="white"
