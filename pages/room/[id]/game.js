@@ -13,7 +13,7 @@ import { useState, useEffect, useRef } from "react";
 import { dayjs } from "../../../lib/dayjs";
 import { axiosInstance } from "../../../lib/axios";
 import { useFirebase } from "../../../firebase/hooks";
-import { child, get, onValue, ref, set } from "firebase/database";
+import { child, get, onValue, ref, remove, set } from "firebase/database";
 import Image from "next/image";
 import { isEqual } from "lodash";
 import getConfig from "next/config";
@@ -101,11 +101,19 @@ export default function Game() {
       updateIsCreator();
 
       const unsubscribe = onValue(child(roomRef, "/endTime"), (snapshot) => {
-        if (snapshot.exists()) {
+        if (
+          snapshot.exists() &&
+          [roundStatuses.INIT, roundStatuses.RUNNING].includes(roundStatus)
+        ) {
           clearInterval(interval.current);
           setEndTime(snapshot.val());
           setRoundStatus(roundStatuses.RUNNING);
           interval.current = timerIntervalFunc.current();
+        }
+
+        if (snapshot.exists && roundStatus === roundStatuses.LOADING) {
+          clearInterval(interval.current);
+          setRoundStatus(roundStatuses.INIT);
         }
       });
 
@@ -126,7 +134,11 @@ export default function Game() {
 
       const unsubscribeRound = onValue(child(roomRef, "/round"), (snapshot) => {
         if (snapshot.exists() && snapshot.val() !== round) {
+          clearInterval(interval.current);
+          setRoundStatus(roundStatuses.LOADING);
+          setDisplayedTimer("-");
           setRound(snapshot.val());
+          setEndTime(null);
         }
       });
 
@@ -157,7 +169,17 @@ export default function Game() {
         clearInterval(interval.current);
       };
     }
-  }, [db, endTime, router, router.query.id, userId, username, round, users]);
+  }, [
+    db,
+    endTime,
+    router,
+    router.query.id,
+    userId,
+    username,
+    round,
+    users,
+    roundStatus,
+  ]);
 
   return (
     <main>
@@ -298,7 +320,9 @@ export default function Game() {
                     const roomRef = ref(db, `/${router.query.id}`);
                     await set(
                       child(roomRef, "/endTime"),
-                      dayjs().add(publicRuntimeConfig.roundDurationInMin, "minutes").unix()
+                      dayjs()
+                        .add(publicRuntimeConfig.roundDurationInMin, "minutes")
+                        .unix()
                     );
                   }}
                   borderRadius="30"
@@ -382,19 +406,12 @@ export default function Game() {
               <Button
                 onClick={async () => {
                   const roomRef = ref(db, `/${router.query.id}`);
-                  // Only random words if next round is a valid round
-                  if (round + 1 !== ROUND_LIMIT) {
-                    setRoundStatus(roundStatuses.LOADING);
-                    await Promise.all([
-                      axiosInstance.get(
-                        `/api/room/${router.query.id}/user/${userId}/random-word`
-                      ),
-                      set(child(roomRef, "/showAnswer"), false),
-                      set(child(roomRef, "/round"), round + 1),
-                    ]);
-                  } else {
-                    await set(child(roomRef, "/round"), round + 1);
-                  }
+                  setRoundStatus(roundStatuses.ENDED);
+                  setDisplayedTimer("Ended!");
+                  await Promise.all([
+                    set(child(roomRef, "/showAnswer"), false),
+                    remove(child(roomRef, "/endTime")),
+                  ]);
                 }}
                 borderRadius="30"
                 border="1px"
