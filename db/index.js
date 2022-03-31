@@ -260,7 +260,8 @@ export async function getOtherUsers(roomId, userId) {
   const snapshot = await db.ref(`/${roomId}/users`).get();
   if (snapshot.exists()) {
     const users = filter(snapshot.val(), (user) => user.id !== userId);
-    return users;
+    const [self] = filter(snapshot.val(), (user) => user.id === userId);
+    return { users, self };
   }
 
   return null;

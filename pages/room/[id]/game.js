@@ -15,7 +15,7 @@ import { axiosInstance } from "../../../lib/axios";
 import { useFirebase } from "../../../firebase/hooks";
 import { child, get, onValue, ref, remove, set } from "firebase/database";
 import Image from "next/image";
-import { isEqual } from "lodash";
+import { isEqual, omit } from "lodash";
 import getConfig from "next/config";
 
 const ROUND_LIMIT = 7;
@@ -44,6 +44,7 @@ export default function Game() {
   const [myWord, setMyWord] = useState("");
   const [round, setRound] = useState(1);
   const [users, setUsers] = useState([]);
+  const [self, setSelf] = useState({});
   const router = useRouter();
   const { db } = useFirebase();
 
@@ -78,11 +79,12 @@ export default function Game() {
     setUsername(localStorage.getItem("fbwg_username"));
     const getUsers = async (roomId) => {
       const {
-        data: { users },
+        data: { users, self },
       } = await axiosInstance.get(
         `/api/room/${roomId}/user/${localStorage.getItem("fbwg_userid")}/game`
       );
       setUsers(users);
+      setSelf(self);
     };
     if (router.query.id) {
       getUsers(router.query.id);
@@ -152,11 +154,20 @@ export default function Game() {
         const otherUsers = snapshot
           .val()
           .filter((u) => u.id !== localStorage.getItem("fbwg_userid"));
+
+        const [newSelf] = snapshot
+          .val()
+          .filter((u) => u.id === localStorage.getItem("fbwg_userid"));
+
         if (snapshot.exists() && !isEqual(users, otherUsers)) {
           setUsers(otherUsers);
           clearInterval(interval.current);
           setRoundStatus(roundStatuses.INIT);
           setDisplayedTimer("-");
+        }
+
+        if (!isEqual(self, omit(newSelf, "word"))) {
+          setSelf(omit(newSelf, "word"));
         }
       });
 
@@ -179,6 +190,7 @@ export default function Game() {
     round,
     users,
     roundStatus,
+    self,
   ]);
 
   return (
@@ -206,6 +218,77 @@ export default function Game() {
             </HStack>
 
             {myWord !== "" && <Text>Your word: {myWord}</Text>}
+            <Text>Your points: {self.point ?? "-"}</Text>
+            {isCreator && (
+              <HStack>
+                <Button
+                  borderColor="white"
+                  backgroundColor="rgba(225, 225, 225, 0.3)"
+                  _hover={{
+                    bgGradient:
+                      "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  }}
+                  onClick={async () => {
+                    const roomRef = ref(db, `/${router.query.id}`);
+                    const users = await get(child(roomRef, "/users"));
+
+                    let currentUserIndex = -1;
+                    users.val().forEach(({ id }, i) => {
+                      if (id === localStorage.getItem("fbwg_userid")) {
+                        currentUserIndex = i;
+                      }
+                    });
+
+                    const updatedUsers = users.val().map((u, i) => {
+                      if (i === currentUserIndex) {
+                        return {
+                          ...u,
+                          point: u.point - 1,
+                        };
+                      }
+                      return u;
+                    });
+
+                    await set(child(roomRef, "/users"), updatedUsers);
+                  }}
+                >
+                  -
+                </Button>
+                <Button
+                  borderColor="white"
+                  backgroundColor="rgba(225, 225, 225, 0.3)"
+                  _hover={{
+                    bgGradient:
+                      "linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))",
+                  }}
+                  onClick={async () => {
+                    const roomRef = ref(db, `/${router.query.id}`);
+                    const users = await get(child(roomRef, "/users"));
+
+                    let currentUserIndex = -1;
+                    users.val().forEach(({ id }, i) => {
+                      if (id === localStorage.getItem("fbwg_userid")) {
+                        currentUserIndex = i;
+                      }
+                    });
+
+                    const updatedUsers = users.val().map((u, i) => {
+                      if (i === currentUserIndex) {
+                        return {
+                          ...u,
+                          point: u.point + 1,
+                        };
+                      }
+                      return u;
+                    });
+
+                    await set(child(roomRef, "/users"), updatedUsers);
+                  }}
+                >
+                  +
+                </Button>
+              </HStack>
+            )}
             <HStack>
               {users?.map((p) => (
                 <Container
@@ -255,7 +338,7 @@ export default function Game() {
                                 if (i === currentUserIndex) {
                                   return {
                                     ...u,
-                                    point: u.point + 1,
+                                    point: u.point - 1,
                                   };
                                 }
                                 return u;
@@ -264,9 +347,9 @@ export default function Game() {
                               await set(child(roomRef, "/users"), updatedUsers);
                             }}
                           >
-                            +
+                            -
                           </Button>
-                          <Box>point: {p.point}</Box>
+                          <Box>points: {p.point}</Box>
                           <Button
                             borderColor="white"
                             backgroundColor="rgba(225, 225, 225, 0.3)"
@@ -291,7 +374,7 @@ export default function Game() {
                                 if (i === currentUserIndex) {
                                   return {
                                     ...u,
-                                    point: u.point - 1,
+                                    point: u.point + 1,
                                   };
                                 }
                                 return u;
@@ -300,7 +383,7 @@ export default function Game() {
                               await set(child(roomRef, "/users"), updatedUsers);
                             }}
                           >
-                            -
+                            +
                           </Button>
                         </HStack>
                       )}
