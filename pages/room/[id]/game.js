@@ -327,17 +327,17 @@ export default function Game() {
                               const roomRef = ref(db, `/${router.query.id}`);
                               const users = await get(child(roomRef, "/users"));
 
-                              let currentUserIndex = -1;
-                              users.val().forEach(({ id }, i) => {
+                              let updatedUserIndex = -1;
+                              users.val().forEach(({ name }, i) => {
                                 if (
-                                  id === localStorage.getItem("fbwg_userid")
+                                  name === p.name
                                 ) {
-                                  currentUserIndex = i;
+                                  updatedUserIndex = i;
                                 }
                               });
 
                               const updatedUsers = users.val().map((u, i) => {
-                                if (i === currentUserIndex) {
+                                if (i === updatedUserIndex) {
                                   return {
                                     ...u,
                                     point: u.point - 1,
@@ -363,17 +363,17 @@ export default function Game() {
                               const roomRef = ref(db, `/${router.query.id}`);
                               const users = await get(child(roomRef, "/users"));
 
-                              let currentUserIndex = -1;
-                              users.val().forEach(({ id }, i) => {
+                              let updatedUserIndex = -1;
+                              users.val().forEach(({ name }, i) => {
                                 if (
-                                  id === localStorage.getItem("fbwg_userid")
+                                  name === p.name
                                 ) {
-                                  currentUserIndex = i;
+                                  updatedUserIndex = i;
                                 }
                               });
 
                               const updatedUsers = users.val().map((u, i) => {
-                                if (i === currentUserIndex) {
+                                if (i === updatedUserIndex) {
                                   return {
                                     ...u,
                                     point: u.point + 1,
