@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   if (!room) return res.status(404).send();
 
   const newUsers = map(room.users, (user) => {
-    const randomWord = sample([...words.other, ...words.mecode]);
+    const randomWord = sample([...words.other, ...words.animal, ...words.fruit, ...words.verb, ...words.occupation]);
     user.word = randomWord;
     return user;
   });
