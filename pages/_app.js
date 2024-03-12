@@ -39,7 +39,7 @@ export default function App({ Component, pageProps }) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
       <Box
-        bgImage={"/images/background.png"}
+        bgImage={"/images/background.svg"}
         h="100vh"
         backgroundSize={"cover"}
       >
