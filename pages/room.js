@@ -30,41 +30,51 @@ function HowtoPlayModal() {
 
   return (
     <>
-      <Button
+      <button
         onClick={onOpen}
-        borderRadius="30"
-        border="1px"
-        borderColor="white"
-        bgGradient="linear(to-r, rgba(31, 79, 109, 0.9), rgba(49, 54, 101, 0.9))"
-        color="white"
-        fontWeight="bold"
-        width="150px"
-        height="50px"
-        cursor="pointer"
-        _hover={{
-          backgroundColor:"rgba(225, 225, 225, 0.3)"
-        }}
+        className="button--modal"
       >
         กติกา
-      </Button>
+      </button>
 
-      <Modal isOpen={isOpen} onClose={onClose} size='xl'>
+      <Modal isOpen={isOpen} onClose={onClose} size="xl">
         <ModalOverlay />
-        <ModalContent borderColor="white"
-          backgroundColor="#8C4C94">
-          <Box borderColor="white"
-            backgroundColor="rgba(225, 225, 225, 0.9)" margin="5" borderRadius="10" color="#564681">
-            <ModalHeader><Center fontWeight="bold">กติกา</Center></ModalHeader>
+        <ModalContent borderColor="white" backgroundColor="#8C4C94">
+          <Box
+            borderColor="white"
+            backgroundColor="rgba(225, 225, 225, 0.9)"
+            margin="5"
+            borderRadius="10"
+            color="#564681"
+          >
+            <ModalHeader>
+              <Center fontWeight="bold">กติกา</Center>
+            </ModalHeader>
             <ModalCloseButton padding="30px" />
             <ModalBody fontWeight="semibold">
-              1. เมื่อกดเริ่มเกม ทุกคนจะได้รับคำต้องห้าม 1 คำ โดยผู้เล่นแต่ละคนจะไม่รู้คำต้องห้ามของตัวเอง
+              1. เมื่อกดเริ่มเกม ทุกคนจะได้รับคำต้องห้าม 1 คำ
+              โดยผู้เล่นแต่ละคนจะไม่รู้คำต้องห้ามของตัวเอง
               <br />
               2. ใครที่หลุดพูดคำต้องห้ามที่ตนเองได้รับจะต้อง ออกจากเกม
               <br />
-              <Box>3. ในแต่ละเกมจะให้เวลารอบละ 5 นาที <Box color="#E24D7A" display="inline">ใครเหลือรอดจนหมดเวลาจะได้รับ 1 คะแนน </Box>
-               และ หากผู้ที่เหลือรอดนั้น<Box color="#E24D7A" display="inline"> รู้ว่าคำต้องห้ามของตัวเองคือคำว่าอะไรจะได้คะแนนเพิ่มอีก 1 คะแนน</Box></Box>
-
-              4. ผู้เล่นที่สามารถหลอกล่อให้คนอื่นพูดคำต้องห้ามของเขาได้จะนับว่าทำการ <Box color="#E24D7A" display="inline">kill และได้ 1 คะแนน</Box> จากการ kill นั้น
+              <Box>
+                3. ในแต่ละเกมจะให้เวลารอบละ 5 นาที{" "}
+                <Box color="#E24D7A" display="inline">
+                  ใครเหลือรอดจนหมดเวลาจะได้รับ 1 คะแนน{" "}
+                </Box>
+                และ หากผู้ที่เหลือรอดนั้น
+                <Box color="#E24D7A" display="inline">
+                  {" "}
+                  รู้ว่าคำต้องห้ามของตัวเองคือคำว่าอะไรจะได้คะแนนเพิ่มอีก 1
+                  คะแนน
+                </Box>
+              </Box>
+              4.
+              ผู้เล่นที่สามารถหลอกล่อให้คนอื่นพูดคำต้องห้ามของเขาได้จะนับว่าทำการ{" "}
+              <Box color="#E24D7A" display="inline">
+                kill และได้ 1 คะแนน
+              </Box>{" "}
+              จากการ kill นั้น
             </ModalBody>
             <Center marginTop="20px">
               <Image
@@ -72,11 +82,14 @@ function HowtoPlayModal() {
                 width={180}
                 height={120}
                 alt="oopsie rules"
-
               />
             </Center>
-            <ModalFooter paddingTop="0" marginTop="-60px" >
-              <Button colorScheme="blue" onClick={onClose} backgroundColor="#564681">
+            <ModalFooter paddingTop="0" marginTop="-60px">
+              <Button
+                colorScheme="blue"
+                onClick={onClose}
+                backgroundColor="#564681"
+              >
                 Close
               </Button>
             </ModalFooter>
@@ -114,7 +127,8 @@ export default function CreatRoom() {
   return (
     <div className="container">
       <main>
-        <VStack alignContent="center">
+        <div className="index__wrapper">
+          <div className="room__subwrapper">
           <Center h="100vh" color="white" marginTop="0px">
             <VStack spacing={8}>
               <Heading
@@ -232,7 +246,8 @@ export default function CreatRoom() {
               <HowtoPlayModal />
             </VStack>
           </Center>
-        </VStack>
+          </div>
+        </div>
       </main>
     </div>
   );

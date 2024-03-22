@@ -4,6 +4,7 @@ import { Box, ChakraProvider } from "@chakra-ui/react";
 import Head from "next/head";
 
 import { extendTheme } from "@chakra-ui/react";
+import '../styles/globals.scss'
 
 const theme = extendTheme({
   colors: {
@@ -38,11 +39,7 @@ export default function App({ Component, pageProps }) {
         <title>คำต้องห้าม</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Box
-        bgImage={"/images/background.svg"}
-        h="100vh"
-        backgroundSize={"cover"}
-      >
+      <Box>
         <Component {...pageProps} />
       </Box>
     </ChakraProvider>
